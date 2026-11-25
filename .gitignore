@@ -40,6 +40,7 @@ ml/crop_health/data/external/
 
 # Ad-hoc smoke-test downloads are evidence on this machine, not source files.
 downloads/
+presentation/assets/_leaf_b64.txt
 
 # OS noise
 .DS_Store
