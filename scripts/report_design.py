@@ -682,6 +682,67 @@ def _pdf_blocks(blocks: Sequence[Block], styles) -> list:
     return flow
 
 
+def build_markdown(path: str | Path, cover: Sequence[Block], front: Sequence[Block], body: Sequence[Block]) -> None:
+    """Render the same blocks to a single GitHub-flavoured Markdown file."""
+
+    def render(blocks: Sequence[Block]) -> list[str]:
+        out: list[str] = []
+        for block in blocks:
+            kind = block[0]
+            if kind == "h1":
+                out.extend([f"# {block[1]}", ""])
+            elif kind == "h2":
+                out.extend([f"## {block[1]}", ""])
+            elif kind == "h3":
+                out.extend([f"### {block[1]}", ""])
+            elif kind == "p":
+                out.extend([block[1], ""])
+            elif kind == "bullets":
+                out.extend([f"- {item}" for item in block[1]] + [""])
+            elif kind == "numbered":
+                out.extend([f"{i}. {item}" for i, item in enumerate(block[1], start=1)] + [""])
+            elif kind == "table":
+                _, caption, headers, rows, _widths = block
+                if caption:
+                    out.extend([f"**{caption}**", ""])
+                head = "| " + " | ".join(str(h).replace("|", "\\|").replace("\n", "<br>") for h in headers) + " |"
+                sep = "| " + " | ".join("---" for _ in headers) + " |"
+                lines = [head, sep]
+                for row in rows:
+                    lines.append("| " + " | ".join(str(v).replace("|", "\\|").replace("\n", "<br>") for v in row) + " |")
+                out.extend(lines + [""])
+            elif kind == "code":
+                _, caption, text = block
+                if caption:
+                    out.extend([f"**{caption}**", ""])
+                out.extend(["```python", text, "```", ""])
+            elif kind == "fig":
+                _, caption, image_path, _width = block
+                name = Path(image_path).name
+                out.extend([f"![{caption}](figures/{name})", "", f"*{caption}*", ""])
+            elif kind == "center":
+                _, text, style_name = block
+                if style_name.lower() == "title":
+                    out.extend([f"# {text}", ""])
+                elif style_name.lower() == "bold":
+                    out.extend([f"## {text}", ""])
+                else:
+                    out.extend([f"> **{text}**" if style_name.lower() == "subtitle" else f"> {text}", ""])
+            elif kind == "pb":
+                out.extend(["---", ""])
+            elif kind == "spacer":
+                continue
+        return out
+
+    lines: list[str] = []
+    lines.extend(render(cover))
+    lines.extend(render(front))
+    lines.extend(render(body))
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+
+
 def build_pdf(path: str | Path, cover: Sequence[Block], front: Sequence[Block], body: Sequence[Block]) -> None:
     _register_fonts()
     styles = _pdf_styles()
