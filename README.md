@@ -37,7 +37,7 @@ The answer comes from a **deterministic, explainable decision engine** that fuse
 | Farms & crops | CRUD, Indian states, seasons, soil types, growth stages, harvest dates, geo-coordinates |
 | Crop health | 38-class cross-domain ConvNeXt-Tiny (4-view TTA + soft crop prior), Grad-CAM heat-map, severity/advisory text, real/demo labelling |
 | Yield | ExtraTrees regressor with split-conformal 80% prediction intervals and harvest readiness |
-| Market | Agmarknet price history, trends, chronological forecast comparison, empirical 80% intervals, CSV import |
+| Market | Official live Agmarknet/data.gov.in rates from two resources, Bundled Agmarknet history, trends, forecast comparison, empirical 80% intervals, CSV import |
 | Buyers | Buyer CRM, price offers with quantity/expiry constraints, eligibility evaluation |
 | Transport | Vehicle profiles, distance and cost estimates, OSRM routing with geodesic fallback |
 | Weather | Open-Meteo current conditions and forecast-derived risk, with caching and graceful degradation |
@@ -143,11 +143,11 @@ npm run build
 ### 4. Tests
 
 ```powershell
-# Backend (76 tests)
+# Backend (111 tests)
 cd backend
 python -m pytest -q --disable-warnings
 
-# Frontend (26 tests)
+# Frontend (29 tests)
 cd frontend
 npm test
 ```
@@ -227,7 +227,7 @@ AgriTwin never silently substitutes synthetic data.
 | --- | --- | --- |
 | Crop health | Trained `model.pt`; `model_mode="real"`; Grad-CAM generated | Colour/texture heuristic; `model_mode="demo"`, `is_demo=True`, UI warning |
 | Yield | Trained `model.joblib`; model version `yield-v1.0.0` | Historical state/crop average, flagged as `historical_average` |
-| Market prices | Bundled real Agmarknet observations | — (no synthetic prices) |
+| Market prices | Live official data.gov.in mandi rates plus bundled Agmarknet history | Keyless five-state mirror when no key is set; never synthetic |
 | Buyers/offers | User-created records | Seeded records have `is_demo=True` and are labelled in the UI and decisions |
 | Weather | Live Open-Meteo | Graceful "unavailable" state; a risk floor is applied |
 | Transport | OSRM route when available | Geodesic distance × detour factor, flagged `approximate` |
@@ -253,7 +253,7 @@ access control if leaf photos are sensitive.
 | `farms` | `GET/POST /farms`, `GET/PATCH/DELETE /farms/{id}`, `GET/POST /crops`, `GET/PATCH/DELETE /crops/{id}` |
 | `crop-health` | `GET /model`, `GET /classes`, `POST /predict`, `GET /predictions`, `GET/DELETE /predictions/{id}` |
 | `yield` | `GET /model`, `POST /predict`, `GET /predictions`, `GET /predictions/{id}`, `GET /readiness/{crop_id}`, `GET /history` |
-| `market` | `GET /crops`, `GET /prices`, `GET /markets`, `GET /trends`, `POST /forecast`, `GET /forecasts`, `POST /import` |
+| `market` | `GET /crops`, `GET /live-rates`, `GET /prices`, `GET /markets`, `GET /trends`, `POST /forecast`, `GET /forecasts`, `POST /import` |
 | `buyers` | CRUD `/buyers`, CRUD `/buyers/{id}/offers`, `/offers/{id}` |
 | `transport` | `GET /vehicles`, `POST /estimate`, `GET /estimates` |
 | `weather` | `GET /geocode/search`, `GET /{farm_id}` |
@@ -268,8 +268,8 @@ Errors use a consistent JSON envelope with `code`, `message`, `details` and `req
 
 | Suite | Command | Verified result |
 | --- | --- | --- |
-| Backend | `python -m pytest -q --disable-warnings` | **98 passed** |
-| Frontend | `npm test -- --run` | **26 passed** |
+| Backend | `python -m pytest -q --disable-warnings` | **111 passed** |
+| Frontend | `npm test -- --run` | **29 passed** |
 | Frontend build | `npm run build` | **passed** (chunk-size warning only) |
 | End-to-end API | `python scripts\smoke_api.py` | **passed**, real ConvNeXt-Tiny + Grad-CAM + TTA |
 | Docker stack | `python scripts\smoke_docker.py` | **passed** on 2026-11-04 through nginx + PostgreSQL; daemon unavailable for a re-run in this workspace |
@@ -359,7 +359,7 @@ majorp/
 │   │   ├── schemas/                 # Pydantic request/response schemas
 │   │   ├── services/                # orchestration + decision engine
 │   │   └── main.py                  # app factory, middleware, lifespan
-│   ├── tests/                       # 93 pytest tests
+│   ├── tests/                       # 111 pytest tests
 │   ├── Dockerfile
 │   └── requirements*.txt
 ├── frontend/
@@ -368,7 +368,7 @@ majorp/
 │   │   ├── hooks/                   # reference-data hooks
 │   │   ├── lib/                     # API client, auth context, utilities
 │   │   ├── pages/                   # 10 authenticated pages + auth pages
-│   │   ├── test/                    # 26 Vitest tests
+│   │   ├── test/                    # 29 Vitest tests
 │   │   └── types/
 │   ├── Dockerfile
 │   └── nginx.conf
@@ -393,6 +393,7 @@ majorp/
 - [docs/DECISION_ENGINE.md](docs/DECISION_ENGINE.md) — policy, risk weights, ordered rules, formulas, worked example
 - [docs/ML_PIPELINE.md](docs/ML_PIPELINE.md) — datasets, training, splits, metrics, inference, Grad-CAM, limitations
 - [docs/DATASETS_AND_LABELS.md](docs/DATASETS_AND_LABELS.md) — dataset provenance, all 38 labels, testing your own photos
+- [docs/DATA_GOV_AGRICULTURE_API_SHORTLIST.md](docs/DATA_GOV_AGRICULTURE_API_SHORTLIST.md) — verified official agriculture APIs and the dual-source live-rate integration
 - [docs/RESEARCH_PAPER_PLAN.md](docs/RESEARCH_PAPER_PLAN.md) — experiment matrix, measured cross-domain results, paper plan
 - [docs/PAPER_DRAFT.md](docs/PAPER_DRAFT.md) — full IEEE-style paper draft generated from the measured results
 - [docs/RESUME_TOMORROW.md](docs/RESUME_TOMORROW.md) — current experiment state and exact commands
@@ -411,7 +412,7 @@ majorp/
 7. **The bundled demo market data ends 2026-09-24.** It is inside the 90-day INSPECT limit at the time of writing but carries a freshness-risk component.
 8. **Docker verification requires Docker Desktop.** The Compose stack (PostgreSQL, backend, nginx) was built and smoke-tested successfully; local SQLite verification is independent of Docker.
 9. **The demo seed is illustrative.** Demo buyers and offers are labelled and must not be treated as real counterparties.
-10. **No payment, logistics booking or government-API integration** is implemented; transport is an estimate and market import is CSV-based.
+10. **No payment or logistics booking** is implemented; transport is an estimate and market import is CSV-based. Live rates use two official data.gov.in resources when a key is configured, with a clearly labelled keyless five-state mirror as fallback.
 
 ---
 
