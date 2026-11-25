@@ -1,0 +1,42 @@
+{
+  "created_at": "2026-11-25T09:00:24.007488+00:00",
+  "artifact": "backend\\app\\ml\\artifacts\\crop_health_v5_zenodo",
+  "model_version": "crop-health-v5.0.0-zenodo-continued",
+  "views": 4,
+  "view_description": "original + horizontal flip at scales 1.0 and 0.9 (4 view(s)); first view is baseline",
+  "device": "cuda",
+  "domains": {
+    "pd": {
+      "n": 236,
+      "single_view_accuracy": 0.6864,
+      "tta_4_view_accuracy": 0.6822,
+      "delta": -0.0042,
+      "net_correct_images": -1,
+      "tta_metrics": {
+        "accuracy": 0.6822,
+        "precision_macro": 0.7106,
+        "recall_macro": 0.6808,
+        "f1_macro": 0.6775,
+        "f1_weighted": 0.6835,
+        "support": 236,
+        "views": 4
+      }
+    },
+    "pv": {
+      "n": 266,
+      "single_view_accuracy": 0.9699,
+      "tta_4_view_accuracy": 0.9699,
+      "delta": 0.0,
+      "net_correct_images": 0,
+      "tta_metrics": {
+        "accuracy": 0.9699,
+        "precision_macro": 0.9726,
+        "recall_macro": 0.9699,
+        "f1_macro": 0.9697,
+        "f1_weighted": 0.9697,
+        "support": 266,
+        "views": 4
+      }
+    }
+  }
+}

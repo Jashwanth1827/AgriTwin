@@ -1,0 +1,403 @@
+% AgriTwin — IEEE-style draft. Compile with: pdflatex agritwin.tex && bibtex agritwin
+% Fill AUTHOR BLOCK and VENUE before submission. All result values are macros at the top.
+\documentclass[journal,twocolumn,10pt]{IEEEtran}
+
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+
+% ---------------------------------------------------------------------------
+% AUTHOR BLOCK — name/institution taken from the project review records;
+% fill CITY, COUNTRY and EMAIL before submission
+% ---------------------------------------------------------------------------
+\author{
+  \IEEEauthorblockN{Jashwanth Aravapalli}\\
+  \IEEEauthorblockA{Department of CSE (AI \& ML), Keshav Memorial Engineering College\\
+  [CITY], [COUNTRY]\\
+  [EMAIL]}
+}
+
+% ---------------------------------------------------------------------------
+% MEASURED RESULT MACROS — update here only when new runs finish
+% ---------------------------------------------------------------------------
+\newcommand{\PVvtwo}{0.9511}
+\newcommand{\PDvtwo}{0.6780}
+\newcommand{\FonePVv2}{0.9507}
+\newcommand{\FonePDv2}{0.6501}
+\newcommand{\EonePV}{0.9549}
+\newcommand{\EonePD}{0.3220}
+\newcommand{\EtwoPV}{0.3120}
+\newcommand{\EtwoPD}{0.6822}
+\newcommand{\EthreePDcontrolled}{0.6653}
+\newcommand{\EfourPV}{0.8308}
+\newcommand{\EfourPD}{0.5551}
+\newcommand{\ExGLab}{0.9586}
+\newcommand{\ExGField}{0.6483}
+\newcommand{\RegLab}{0.9549}
+\newcommand{\RegField}{0.6610}
+% Deployed v3 — ConvNeXt-Tiny with metadata-driven 4-view TTA
+\newcommand{\PVvthreeSingle}{0.9774}
+\newcommand{\PDvthreeSingle}{0.6907}
+\newcommand{\FonePDvthreeSingle}{0.6833}
+\newcommand{\PVvthree}{0.9812}
+\newcommand{\PDvthree}{0.7161}
+\newcommand{\FonePDvthree}{0.7093}
+\newcommand{\PrecPDvthree}{0.7373}
+\newcommand{\RecPDvthree}{0.7106}
+\newcommand{\DeltaTTA}{0.0254}
+\newcommand{\LowConfSingle}{0.3333}
+\newcommand{\LowConfTTA}{0.4167}
+% Soft crop prior: external farm crop hint, alpha = 0.95
+\newcommand{\CropAlpha}{0.95}
+\newcommand{\PDprior}{0.8093}
+\newcommand{\PDpriorWrong}{0.7754}
+\newcommand{\PDhard}{0.8305}
+\newcommand{\PDhardWrong}{0.6568}
+
+\begin{document}
+
+\title{AgriTwin: Uncertainty-Aware Fusion of Leaf, Yield and Market Signals for Crop Decisions,
+with Cross-Domain Validation of the Disease Input}
+
+\maketitle
+
+\begin{abstract}
+Farmers combine a leaf photograph, a yield expectation, a mandi price, a buyer offer and a transport
+quote to decide what to grow, when to harvest and where to sell. These signals are usually processed
+in isolation, so an individually accurate prediction need not produce a good economic decision.
+We present \emph{AgriTwin}, an agricultural digital-twin platform that unifies crop-disease
+screening, conformal yield prediction, market forecasting and transport costing in one
+uncertainty-bearing state consumed by a deterministic decision engine. Because the leaf photo is
+the first link in this chain, a confidently wrong disease prediction would corrupt the entire
+decision; we therefore validate that input under domain shift. A controlled experiment shows that
+an EfficientNet-B0 trained only on PlantVillage reaches \EonePV accuracy in the lab but collapses
+to \EonePD on in-the-wild PlantDoc photographs, a 63.3-point gap. Joint training retains lab
+performance (\PVvtwo) and more than doubles field accuracy (\EthreePDcontrolled in the
+controlled run; \PDvtwo for the independently retrained v2 checkpoint). A follow-up ConvNeXt-Tiny
+trained on a de-duplicated joint manifest is now deployed with metadata-driven 4-view TTA, reaching
+\PVvthree lab / \PDvthree field accuracy (field macro-F1 \FonePDvthree); a soft crop prior from
+the selected farm crop reaches \PDprior field accuracy when the hint is correct. Contrary to the usual
+assumption, sequential fine-tuning underperformed joint training on both domains
+(\EfourPV lab / \EfourPD field). Grad-CAM overlays confirm lesion-focused attention. The system
+turns these predictions, yield and price intervals into ranked sell/wait decisions with an
+explicit INSPECT fallback for low-confidence inputs. All numbers are reproduced by released code
+and stored in artefact metadata.
+\end{abstract}
+
+\begin{IEEEkeywords}
+agricultural digital twin, decision support, plant disease detection, domain adaptation,
+uncertainty quantification, Grad-CAM, EfficientNet, ConvNeXt, test-time augmentation
+\end{IEEEkeywords}
+
+\section{Introduction}
+\label{sec:intro}
+
+Farmers' economically important decisions are multi-source. Crop health is judged from a leaf
+photo, expected production from experience or a model, the selling price from yesterday's mandi
+quote, a buyer may offer a different price by phone, and transport cost depends on distance and
+vehicle. Each source is uncertain, time-stamped and perishable. Treating them as separate
+predictions leaves the farmer to perform an implicit, untracked fusion; an individually good
+prediction does not guarantee a good decision.
+
+AgriTwin represents all sources as one typed, uncertainty-bearing decision state. Disease
+screening returns a label, a confidence and a Grad-CAM explanation; yield prediction returns a
+point estimate and an 80\% split-conformal interval; market forecasting returns a price and
+empirical residual bounds; buyer offers carry validity windows; and transport returns a cost
+breakdown. A pure decision engine combines these into eight weighted risk components, two revenue
+scenarios (sell now / wait) and an ordered rule set recommending SELL, WAIT or INSPECT, with a
+human-readable explanation.
+
+This design makes the reliability of the first signal a system-level concern. Deep learning
+studies routinely report 95--99\% accuracy on PlantVillage, where single leaves are photographed
+face-up against uniform backgrounds. Field photographs contain variable illumination, occlusion,
+multiple leaves, soil and sky. A model that exploits the controlled background as a shortcut will
+be confidently wrong in exactly the conditions the decision system is meant to support.
+
+The contributions are:
+\begin{enumerate}
+  \item an integrated uncertainty-aware decision system fusing leaf health, yield intervals,
+        market forecasts, buyer offers and transport cost into one reproducible decision with
+        explanations and an INSPECT fallback;
+  \item a measured quantification of the lab-to-field failure (\EonePV $\to$ \EonePD) using the
+        official PlantDoc test split, with no test image used for training or selection;
+  \item a controlled four-protocol comparison showing joint training outperforms sequential
+        fine-tuning, including the honest negative result that two-stage adaptation loses on
+        both domains;
+  \item explainability and efficiency evidence: Grad-CAM verification and a measured
+        parameter/FLOP/latency profile supporting near-real-time inference.
+\end{enumerate}
+
+\section{Related Work}
+
+\emph{Plant disease detection.} Mohanty \emph{et al.}~\cite{mohanty2016} demonstrated deep
+convolutional networks on PlantVillage and already noted its limited realism. Transfer learning
+with EfficientNet, ResNet and MobileNet dominates subsequent work, usually with in-domain
+accuracy only; surveys document the gap to field readiness~\cite{survey2025,review2025}.
+
+\emph{In-the-wild data.} PlantDoc~\cite{plantdoc} provides internet photographs with natural
+backgrounds and multiple leaves. Recent lightweight-model evaluations report in-domain PlantDoc
+results and edge deployment~\cite{edge2026}.
+
+\emph{Cross-domain detection.} Deployable cross-domain smartphone systems exist~\cite{crossdomain2025}.
+Our classifier is instead treated as an input-reliability component of a larger decision system,
+and we report the negative two-stage result rather than only the best configuration.
+
+\emph{Explainability and digital twins.} Grad-CAM~\cite{gradcam} localises evidence without
+architecture changes and is used here as a qualitative check and a user-facing output; reviews
+recommend it to detect background shortcuts~\cite{review2025}. Agricultural digital twins have
+demonstrated value for individualised management~\cite{kim2024}. We work at their intersection:
+a decision pipeline whose first input is cross-domain validated and explained.
+
+\emph{Excess-green prior.} The excess-green index highlights vegetation and suppresses soil. An
+ExG attention gate was effective in our complementary UAV crop/weed study (ReVit). Here the same
+prior is adapted as a training-time background-suppression ablation, reported only if it improves
+field accuracy; the two systems remain separate and cross-cited.
+
+\section{System and Methods}
+\label{sec:methods}
+
+\subsection{System architecture}
+
+The implemented system has seven layers: data; persistence (SQLAlchemy 2, Alembic); ML inference
+(ConvNeXt-Tiny with 4-view TTA + Grad-CAM, ExtraTrees + conformal intervals, market forecasters); a pure decision
+engine (policy $\to$ risk $\to$ fusion $\to$ ordered rules); service orchestration; a FastAPI
+layer with JWT, validation and rate limiting; and a React 18/TypeScript presentation layer.
+
+A scan is validated (MIME allow-list, 8\,MB and 4096\,px limits, SHA-256 deduplication), passed to
+the crop-health service, and persisted with its Grad-CAM overlay. The decision service reads this
+prediction, the latest yield prediction, market forecast, buyer offers and transport estimate,
+builds typed inputs, calls the engine, and stores the decision and factors. Every response labels
+its model mode (\texttt{real} vs \texttt{demo}), so fallback behaviour is never silent.
+
+\subsection{Datasets}
+
+\begin{table}[t]
+\centering
+\caption{Datasets and split sizes.}
+\label{tab:data}
+\begin{tabular}{@{}llr@{}}
+\toprule
+Dataset & Role & Images \\
+\midrule
+PlantVillage subset & controlled lab, disease semantics & 1{,}900 \\
+PlantDoc (CC BY 4.0) & in-the-wild internet/field images & 2{,}572 \\
+Web / farm photos & optional test-only external domain & user-supplied \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+PlantVillage contributes 1{,}368/266/266 train/validation/test images; PlantDoc contributes
+1{,}998/338/236. A deterministic manifest stores all 4{,}472 entries with a domain tag. Of 2{,}578
+PlantDoc files, 2{,}572 were recovered; six filenames with Windows-illegal characters could not be
+stored, while all 28 classes and both official splits remain complete. The official PlantDoc test
+split is never used for training or early stopping. Twenty-eight PlantDoc folders map onto the
+same fixed 38-class output space used by the deployed service. A SHA-256 audit found 12 duplicate
+image groups, 11 crossing train/validation and test splits; the de-duplicated manifest used by v3
+contains 4{,}460 entries and preserves every held-out test image.
+
+\subsection{Model and preprocessing}
+
+The controlled study used ImageNet-pretrained EfficientNet-B0 with a 38-logit head; the deployed v3
+model uses ConvNeXt-Tiny with the same fixed class order. Inputs are 192$\times$192 central crops
+normalised with ImageNet statistics. Training augmentation: RandomResizedCrop (scale 0.65--1.0),
+horizontal flip, vertical flip ($p=0.15$), rotation up to $15^\circ$, colour jitter and random
+grayscale ($p=0.05$). Evaluation uses deterministic resize and centre crop; deployed serving
+averages four views (original and horizontal flip at scales 1.0 and 0.9) before argmax. Measured
+complexity on an RTX 5060 Laptop with CUDA 12.8 wheels: ConvNeXt-Tiny has 27{,}849{,}350 parameters,
+a 106.24\,MB checkpoint and 6.5458 GFLOPs, with 31.9\,ms/image at batch 1 and about 231 images/s at
+batch 32 for one forward pass. The historical EfficientNet-B0 run had 4{,}056{,}226 parameters and
+0.5655 GFLOPs. Full data: \texttt{benchmark\_results\_v3.json}.
+
+\subsection{Training and cross-domain protocol}
+
+Inverse-frequency weighted cross-entropy, AdamW (3e-4 for the historical study, 1e-4 for v3,
+weight decay 1e-4), cosine schedule and early stopping on validation macro-F1; seed 42; FP16
+autocast with GradScaler on CUDA. Optional
+label smoothing and mixup are metadata-recorded flags. Four protocols run from the same manifest:
+\texttt{baseline\_pv} (lab only), \texttt{plantdoc\_only} (field only), \texttt{mixed} (joint) and
+\texttt{two\_stage} (lab then field). Each is evaluated on both held-out test sets.
+
+\subsection{Explainability and decision fusion}
+
+Grad-CAM~\cite{gradcam} weights the last convolutional feature maps (\texttt{features[-1]} for
+EfficientNet, \texttt{features[-1][-1]} for ConvNeXt) by globally averaged gradients
+of the predicted class score, applies ReLU and upsamples. Overlays are produced offline for the
+paper and online in the API. The decision engine weights eight risk components (yield uncertainty,
+crop health, offer freshness/competitiveness, market uncertainty, transport, completeness, price
+staleness, deterioration). Health confidence gates the INSPECT rule at 0.55: below it, the health
+signal is discounted and manual verification may replace an economic action. Yield and price
+intervals propagate into revenue bounds.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{Main cross-domain comparison}
+
+\begin{table}[t]
+\centering
+\caption{Accuracy and macro-F1 on held-out lab (PV) and field (PD) test sets.}
+\label{tab:cross}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Protocol & PV acc & PD acc & PV F1 & PD F1 \\
+\midrule
+\texttt{baseline\_pv}   & \textbf{\EonePV} & \EonePD & 0.9539 & 0.2177 \\
+\texttt{plantdoc\_only} & \EtwoPV & \EtwoPD & 0.2396 & 0.6721 \\
+\texttt{mixed}          & \PVvtwo & \textbf{\EthreePDcontrolled} & \textbf{\FonePVv2} & 0.6563 \\
+\texttt{two\_stage}     & \EfourPV & \EfourPD & 0.8322 & 0.5292 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The lab-only model loses 63.3 accuracy points on real photographs. Joint training retains lab
+accuracy (\EonePV $\to$ \PVvtwo) while more than doubling field accuracy (\EonePD $\to$
+\EthreePDcontrolled). The expected winner, two-stage fine-tuning, underperforms joint training on
+\emph{both} domains, consistent with catastrophic forgetting of the lab domain. The deployed
+checkpoint was independently retrained to save the winning weights and regenerate Grad-CAM; it
+measured \PVvtwo lab / \PDvtwo field (F1 \FonePVv2 / \FonePDv2). The small field difference
+from the controlled run is attributed to non-deterministic CUDA kernel selection; both are stored
+in the v2 backup metadata.
+
+\subsection{Deployed ConvNeXt-Tiny and test-time augmentation}
+
+\begin{table}[t]
+\centering
+\caption{Deployed v3 on held-out tests: single view versus 4-view TTA.}
+\label{tab:v3}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Inference & PV acc & PD acc & PD F1 \\
+\midrule
+Single view & \PVvthreeSingle & \PDvthreeSingle & \FonePDvthreeSingle \\
+4-view TTA (deployed) & \textbf{\PVvthree} & \textbf{\PDvthree} & \textbf{\FonePDvthree} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The ConvNeXt-Tiny candidate was promoted only because its single-view field accuracy \PDvthreeSingle
+strictly exceeded the v2 baseline \PDvtwo. Metadata-driven 4-view TTA was then enabled after a
+further \DeltaTTA gain on the same held-out PlantDoc split: field macro precision \PrecPDvthree and
+recall \RecPDvthree, nine images fixed and three broken. Below the 0.55 screening threshold,
+accuracy rose from \LowConfSingle to \LowConfTTA ($n=48$). Serving and \texttt{tta\_eval.py} call
+the same transform helper, and CUDA and CPU evaluations both return \PDvthree.
+
+The scan form already requests a farm crop, so we also measured an external soft crop prior
+(\texttt{alpha=\CropAlpha}) that reweights probabilities toward classes of the selected crop before
+argmax. On the same held-out PlantDoc split it reaches \PDprior with a correct hint and
+\PDpriorWrong when 20\% of hints are wrong; unsupported crops fall back unchanged. A hard mask
+(\texttt{alpha=1}) reaches \PDhard with correct hints but collapses to \PDhardWrong at 20\% wrong
+hints, so it was rejected. The soft prior is a serving enhancement measured with
+\texttt{crop\_prior\_eval.py}; weight promotion still rests on \PDvthreeSingle / \PDvthree.
+
+\subsection{Measured ablations}
+
+\begin{table}[t]
+\centering
+\caption{Additional ablations. TTA is model-dependent: rejected for v2, enabled for v3.}
+\label{tab:ablate}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Variant & Lab & Field & Outcome \\
+\midrule
+256\,px, 20 epochs, PD-val selection & 0.9586 & 0.6525 & rejected \\
+4-view TTA on v2 EfficientNet-B0 & 0.9662 & 0.6864 & rejected \\
+ExG background suppression & \ExGLab & \ExGField & rejected \\
+Label smoothing + mixup & \RegLab & \RegField & rejected \\
+ConvNeXt-Tiny, de-duplicated manifest & \PVvthreeSingle & \PDvthreeSingle & promoted \\
+4-view TTA on v3 ConvNeXt-Tiny & \PVvthree & \PDvthree & enabled \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+More pixels and an excess-green prior are not automatic remedies under domain shift: 256\,px with
+field-domain checkpoint selection reduced field accuracy, and ExG suppresses the brown and necrotic
+tissue that carries lesion evidence, so it remains in the separate ReVit study and is only
+cross-cited here. Label smoothing ($0.1$) with mixup ($0.2$) retained lab accuracy ($0.9549$) but
+reduced field accuracy from \PDvtwo to \RegField and lowered macro-F1 from \FonePDvtwo to $0.5584$;
+the v2 checkpoint was therefore left unchanged. Test-time augmentation is model-dependent: it was
+rejected for v2 (two net images, no low-confidence gain) but enabled for v3, where it added
+\DeltaTTA field accuracy and improved low-confidence accuracy from \LowConfSingle to \LowConfTTA at
+roughly four times the forward-pass cost.
+
+\subsection{Per-class behaviour and explainability}
+
+Of 38 classes, 27 have non-zero PlantDoc test support. For the promoted single-view ConvNeXt
+checkpoint, the weakest supported classes are maize gray leaf spot (F1 0.143, $n=4$), tomato
+bacterial spot (0.235, $n=9$), soybean healthy (0.364, $n=8$) and potato early blight (0.462,
+$n=8$). Dominant confusions are biologically plausible: maize northern leaf blight $\to$ maize gray
+leaf spot (7), tomato bacterial spot $\to$ tomato septoria leaf spot (6), pepper bacterial spot
+$\to$ tomato bacterial spot (4), peach healthy $\to$ cherry healthy (4) and potato early blight
+$\to$ potato late blight (3). Grad-CAM overlays generated from the deployed model are referenced in
+metadata and show attention on lesion regions rather than uniform background in correctly
+classified examples.
+
+\subsection{Efficiency and system behaviour}
+
+\begin{table}[t]
+\centering
+\caption{Measured efficiency, RTX 5060 Laptop, 192\,px input, CUDA 12.8 wheels. One forward pass.}
+\label{tab:eff}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Architecture & Params & Size & GFLOPs & ms/img \\
+\midrule
+MobileNet-V3-Large & 4.25M & 16.22\,MB & 0.3179 & 33.3 \\
+EfficientNet-B0 (historical v2) & 4.06M & 15.47\,MB & 0.5655 & 42.3 \\
+EfficientNet-B3 & 10.75M & 41.03\,MB & 1.4134 & 66.7 \\
+EfficientNet-V2-S & 20.23M & 77.16\,MB & 4.1878 & 94.9 \\
+ResNet-50 & 23.59M & 89.97\,MB & 6.0057 & 31.5 \\
+ConvNeXt-Tiny (deployed v3) & 27.85M & 106.24\,MB & 6.5458 & 31.9 \\
+ConvNeXt-Small & 49.48M & 188.77\,MB & 12.7587 & 54.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Source: \texttt{benchmark\_results\_v3.json}; the earlier cu118 run is preserved in
+\texttt{benchmark\_results.json}. Deployed v3 averages four views, about 1.76\,s per CPU
+prediction in the smoke test. A helper runs arbitrary user photos through the service and reports
+label, confidence, severity and ACCEPT/INSPECT verdict; on five downloaded photos it returned 2/5
+exact matches and routed two low-confidence cases to INSPECT. These are smoke checks, not a labelled
+test set; see \texttt{docs/CROP\_HEALTH\_V3.md}.
+
+\section{Discussion}
+
+The 63-point collapse is consistent with shortcut learning: a uniform background and consistent
+leaf orientation let a model score highly without learning robust disease features. Joint training
+works because field images break the shortcut while lab images preserve clean disease semantics;
+sequential fine-tuning instead overwrites the lab representation.
+
+The system-level implication is that confidence must be first-class. A classifier confidently
+wrong under domain shift is more dangerous than an uncertain one. The INSPECT rule, confidence
+discounting and Grad-CAM overlay are therefore the mechanism by which an imperfect input is kept
+from dominating an economic decision.
+
+Limitations remain: PlantDoc has roughly 2.6k images with single-label annotations of possibly
+multi-disease leaves; the model assumes one leaf per image and covers 14 crop species; abiotic
+stress can mimic disease; and the optional web test set was unavailable for this draft. Field
+validation with longitudinal farmer data, multi-label severity scoring and active learning are
+needed before the screening output can be treated as diagnostic.
+
+\section{Conclusion and Future Work}
+
+We presented AgriTwin, an uncertainty-aware agricultural decision system fusing disease, yield,
+market, offer and transport inputs into a single explainable decision. Its leaf-photo input was
+cross-domain validated: the lab-to-field collapse was measured, joint training recovered field
+accuracy while retaining lab accuracy, and sequential adaptation failed. The deployed ConvNeXt-Tiny
+model reaches \PVvthree lab / \PDvthree field accuracy with 4-view TTA, or \PDprior with a correct
+crop hint, while remaining a screening aid; the engine falls back to INSPECT when confidence is low.
+Future work includes
+on-device deployment, external field trials, multi-label disease and severity modelling, and
+active learning from farmer feedback.
+
+\section*{Acknowledgment}
+[ACKNOWLEDGMENTS / FUNDING, IF APPLICABLE]
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

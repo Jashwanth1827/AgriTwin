@@ -1,0 +1,56 @@
+{
+  "version": "1.0.1",
+  "description": "Decision policy for AgriTwin. Every threshold is configurable and documented in docs/DECISION_ENGINE.md.",
+  "finance": {
+    "commission_pct": 0.01,
+    "other_selling_cost_per_quintal": 5.0
+  },
+  "risk": {
+    "weights": {
+      "yield_uncertainty": 0.20,
+      "price_uncertainty": 0.18,
+      "crop_health": 0.18,
+      "weather": 0.07,
+      "buyer_offer": 0.10,
+      "transport": 0.05,
+      "data_completeness": 0.10,
+      "market_freshness": 0.12
+    },
+    "yield_relative_half_width_reference": 0.5,
+    "price_relative_half_width_reference": 0.3,
+    "market_freshness_reference_days": 30,
+    "low_max": 0.33,
+    "medium_max": 0.66,
+    "risk_premium_lambda": 0.5,
+    "risk_preference_max_scores": {
+      "low": 0.45,
+      "medium": 0.72,
+      "high": 0.85
+    }
+  },
+  "policy": {
+    "inspect": {
+      "min_health_confidence": 0.55,
+      "max_health_severity": 0.65,
+      "min_data_completeness": 0.60,
+      "max_yield_relative_interval": 0.50,
+      "max_price_age_days": 90
+    },
+    "wait": {
+      "min_days_to_harvest": 10,
+      "min_expected_wait_uplift_pct": 0.04,
+      "holding_cost_per_quintal_per_day": 2.0,
+      "crop_deterioration_per_day": 0.0015,
+      "max_recommended_wait_days": 45,
+      "risk_margin": 0.05
+    },
+    "sell": {
+      "min_net_realization_per_quintal": 0.0
+    }
+  },
+  "freshness": {
+    "price_max_age_days": 90,
+    "weather_max_age_days": 3,
+    "prediction_max_age_days": 30
+  }
+}

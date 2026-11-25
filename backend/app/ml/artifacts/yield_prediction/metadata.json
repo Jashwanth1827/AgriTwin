@@ -1,0 +1,91 @@
+{
+  "version": "yield-v1.0.0",
+  "model_name": "ExtraTrees",
+  "trained_at": "2026-11-03T17:54:08.739557+00:00",
+  "seed": 42,
+  "dataset_provenance": "India district-level crop production dataset (1997-2015), public mirror of data.world/thatzprem/agriculture-india. Production interpreted as tonnes; yield = production_tonnes * 10 / area_ha.",
+  "split": {
+    "train": "years <= 2012",
+    "validation": "2013-2014 (conformal calibration)",
+    "test": "2015 (held-out future year)"
+  },
+  "training_rows": 80000,
+  "validation_rows": 9867,
+  "test_rows": 305,
+  "features": [
+    "crop",
+    "season",
+    "state",
+    "area_ha",
+    "log_area",
+    "crop_state_hist_avg",
+    "crop_hist_avg",
+    "state_hist_avg"
+  ],
+  "metrics": {
+    "mae": 14.7151,
+    "rmse": 36.5968,
+    "r2": 0.9533,
+    "mape_pct": 57.52,
+    "interval_coverage": 0.8492,
+    "interval_half_width_q_per_ha": 17.4339,
+    "interval_nominal_coverage": 0.8
+  },
+  "validation_metrics": {
+    "mae": 18.0492,
+    "rmse": 48.2509,
+    "r2": 0.9259,
+    "mape_pct": 41.79
+  },
+  "model_comparison": [
+    {
+      "model": "ExtraTrees",
+      "validation": {
+        "mae": 18.0492,
+        "rmse": 48.2509,
+        "r2": 0.9259,
+        "mape_pct": 41.79
+      }
+    },
+    {
+      "model": "RandomForest",
+      "validation": {
+        "mae": 19.218,
+        "rmse": 49.2146,
+        "r2": 0.9229,
+        "mape_pct": 47.96
+      }
+    },
+    {
+      "model": "HistGradientBoosting",
+      "validation": {
+        "mae": 19.0524,
+        "rmse": 50.5802,
+        "r2": 0.9186,
+        "mape_pct": 46.34
+      }
+    },
+    {
+      "model": "GradientBoosting",
+      "validation": {
+        "mae": 20.8495,
+        "rmse": 55.4185,
+        "r2": 0.9023,
+        "mape_pct": 47.78
+      }
+    },
+    {
+      "model": "DummyMean",
+      "validation": {
+        "mae": 100.3552,
+        "rmse": 177.4095,
+        "r2": -0.0014,
+        "mape_pct": 475.6
+      }
+    }
+  ],
+  "interval_method": "split_conformal_absolute_residual_q80",
+  "is_experimental": true,
+  "notes": "Prediction intervals use split conformal calibration on 2013-2014. The model does not use soil or weather observations because the historical dataset has no paired soil/weather records. Metrics are from a held-out year and should not be read as a guarantee for an individual farm.",
+  "conformal_calibration_coverage": 0.8459
+}

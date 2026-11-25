@@ -1,0 +1,82 @@
+{
+  "version": "1.0.0",
+  "description": "Typical crop duration and harvest-window assumptions for Indian conditions. Ranges are compiled from ICAR package-of-practices guidance and are deliberately configurable; they are planning aids, not a field diagnosis.",
+  "source": "ICAR package of practices (typical ranges, 2024). Values are indicative and vary by variety, irrigation and region.",
+  "crops": {
+    "Rice": {
+      "seasons": {"Kharif": 125, "Rabi": 135, "Summer": 120, "Whole Year": 130},
+      "harvest_window_days": 14,
+      "notes": "Duration from transplanting/direct seeding to physiological maturity; drain field before harvest."
+    },
+    "Wheat": {
+      "seasons": {"Rabi": 125, "Whole Year": 125},
+      "harvest_window_days": 12,
+      "notes": "Harvest at 12-14% grain moisture; avoid delay after maturity to limit shattering."
+    },
+    "Maize": {
+      "seasons": {"Kharif": 100, "Rabi": 115, "Summer": 95, "Whole Year": 105},
+      "harvest_window_days": 10,
+      "notes": "Cobs mature when husk turns dry; grain moisture should be below 15% for storage."
+    },
+    "Cotton": {
+      "seasons": {"Kharif": 170, "Whole Year": 170},
+      "harvest_window_days": 45,
+      "notes": "Picking is staged across multiple pickings; first picking typically starts 140-170 days after sowing."
+    },
+    "Soyabean": {
+      "seasons": {"Kharif": 100, "Whole Year": 100},
+      "harvest_window_days": 10,
+      "notes": "Harvest when pods turn brown and seed moisture is around 12-14%."
+    },
+    "Groundnut": {
+      "seasons": {"Kharif": 115, "Rabi": 120, "Summer": 110, "Whole Year": 115},
+      "harvest_window_days": 12,
+      "notes": "Pod maturity indicated by darkened pod mesocarp; avoid over-maturity to reduce in-situ germination."
+    },
+    "Onion": {
+      "seasons": {"Kharif": 110, "Rabi": 130, "Late Kharif": 120, "Whole Year": 120},
+      "harvest_window_days": 14,
+      "notes": "Harvest after neck fall and cure bulbs in shade before storage or sale."
+    },
+    "Tomato": {
+      "seasons": {"Kharif": 110, "Rabi": 120, "Summer": 100, "Whole Year": 110},
+      "harvest_window_days": 21,
+      "notes": "Harvest at breaker/pink stage for distant markets; multiple pickings are typical."
+    },
+    "Potato": {
+      "seasons": {"Rabi": 95, "Kharif": 90, "Whole Year": 95},
+      "harvest_window_days": 12,
+      "notes": "Dehaulm 10-15 days before harvest to harden skin for storage."
+    },
+    "Sugarcane": {
+      "seasons": {"Kharif": 330, "Whole Year": 330},
+      "harvest_window_days": 60,
+      "notes": "Mill-maturity is assessed by sucrose content; coordinate with the sugar mill calendar."
+    },
+    "Chickpea": {
+      "seasons": {"Rabi": 110, "Whole Year": 110},
+      "harvest_window_days": 10,
+      "notes": "Harvest when pods turn brown and seed is hard."
+    },
+    "Mustard": {
+      "seasons": {"Rabi": 115, "Whole Year": 115},
+      "harvest_window_days": 10,
+      "notes": "Harvest when 75-80% siliquae turn yellow to limit shattering."
+    },
+    "Chilli": {
+      "seasons": {"Kharif": 150, "Rabi": 160, "Whole Year": 155},
+      "harvest_window_days": 30,
+      "notes": "Red chilli harvest depends on colour development and dry matter; multiple pickings."
+    },
+    "Banana": {
+      "seasons": {"Kharif": 330, "Rabi": 350, "Whole Year": 340},
+      "harvest_window_days": 20,
+      "notes": "Harvest at 75-80% maturity for distant markets; bunches are harvested in stages."
+    }
+  },
+  "default": {
+    "seasons": {"Kharif": 120, "Rabi": 120, "Summer": 110, "Whole Year": 120},
+    "harvest_window_days": 14,
+    "notes": "No crop-specific calendar is configured; a 120-day generic assumption is used. Treat the estimate as low confidence."
+  }
+}

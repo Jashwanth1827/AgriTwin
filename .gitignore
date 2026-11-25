@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local state and secrets
+.env
+.env.*
+!.env.example
+backend/agritwin.db
+backend/agritwin.db-shm
+backend/agritwin.db-wal
+**/uploads/
+/260
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+
+# Large model binaries are produced by the training scripts. They are present
+# in the delivered folder but intentionally excluded from version control.
+backend/app/ml/artifacts/**/*.pt
+backend/app/ml/artifacts/**/*.pth
+backend/app/ml/artifacts/**/*.joblib
+
+# PlantVillage / PlantDoc / web images and generated manifests are downloaded, never committed.
+ml/crop_health/data/plantvillage_subset/
+ml/crop_health/data/plantdoc/
+ml/crop_health/data/web_images/
+ml/crop_health/data/field_robust/
+ml/crop_health/data/raw/
+ml/crop_health/data/external/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Ad-hoc smoke-test downloads are evidence on this machine, not source files.
+downloads/
+
+# OS noise
+.DS_Store
+Thumbs.db

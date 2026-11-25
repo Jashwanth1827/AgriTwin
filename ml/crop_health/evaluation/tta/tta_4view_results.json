@@ -1,0 +1,52 @@
+{
+  "created_at": "2026-11-24T18:14:13.447980+00:00",
+  "artifact": "C:\\Users\\arvap\\OneDrive\\Documents\\Desktop\\majorp\\backend\\app\\ml\\artifacts\\crop_health",
+  "model_version": "crop-health-v2.0.0-field-robust",
+  "views": 4,
+  "view_description": "original+flip at scale 1.0 and scale 0.9 (4 views); first view is baseline",
+  "device": "cpu",
+  "domains": {
+    "pd": {
+      "n": 236,
+      "single_view_accuracy": 0.678,
+      "tta_4_view_accuracy": 0.6864,
+      "delta": 0.0085,
+      "net_correct_images": 2,
+      "flips_fixed": 8,
+      "flips_broken": 6,
+      "low_confidence": {
+        "n": 48,
+        "single_view_accuracy": 0.4375,
+        "tta_accuracy": 0.4375,
+        "delta": 0.0
+      },
+      "high_confidence": {
+        "n": 188,
+        "single_view_accuracy": 0.7394,
+        "tta_accuracy": 0.75,
+        "delta": 0.0106
+      }
+    },
+    "pv": {
+      "n": 266,
+      "single_view_accuracy": 0.9511,
+      "tta_4_view_accuracy": 0.9662,
+      "delta": 0.015,
+      "net_correct_images": 4,
+      "flips_fixed": 4,
+      "flips_broken": 0,
+      "low_confidence": {
+        "n": 7,
+        "single_view_accuracy": 0.1429,
+        "tta_accuracy": 0.4286,
+        "delta": 0.2857
+      },
+      "high_confidence": {
+        "n": 259,
+        "single_view_accuracy": 0.973,
+        "tta_accuracy": 0.9807,
+        "delta": 0.0077
+      }
+    }
+  }
+}

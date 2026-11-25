@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0",
+  "description": "Default Indian road-freight assumptions used when the user does not supply explicit costs. These are configurable planning defaults, not live freight quotes.",
+  "currency": "INR",
+  "vehicles": {
+    "tempo": {
+      "label": "Tempo / small LCV",
+      "capacity_quintals": 30,
+      "cost_per_km_inr": 26.0,
+      "fixed_cost_inr": 250.0,
+      "loading_cost_inr": 100.0,
+      "unloading_cost_inr": 100.0
+    },
+    "mini_truck": {
+      "label": "Mini truck",
+      "capacity_quintals": 50,
+      "cost_per_km_inr": 22.0,
+      "fixed_cost_inr": 300.0,
+      "loading_cost_inr": 120.0,
+      "unloading_cost_inr": 120.0
+    },
+    "truck": {
+      "label": "Medium truck",
+      "capacity_quintals": 100,
+      "cost_per_km_inr": 18.0,
+      "fixed_cost_inr": 350.0,
+      "loading_cost_inr": 150.0,
+      "unloading_cost_inr": 150.0
+    },
+    "large_truck": {
+      "label": "Large truck",
+      "capacity_quintals": 200,
+      "cost_per_km_inr": 24.0,
+      "fixed_cost_inr": 600.0,
+      "loading_cost_inr": 250.0,
+      "unloading_cost_inr": 250.0
+    },
+    "tractor_trolley": {
+      "label": "Tractor trolley",
+      "capacity_quintals": 80,
+      "cost_per_km_inr": 14.0,
+      "fixed_cost_inr": 200.0,
+      "loading_cost_inr": 100.0,
+      "unloading_cost_inr": 100.0
+    }
+  },
+  "default_vehicle": "truck"
+}

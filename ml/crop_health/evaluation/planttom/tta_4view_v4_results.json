@@ -1,0 +1,42 @@
+{
+  "created_at": "2026-11-25T06:39:29.752993+00:00",
+  "artifact": "backend\\app\\ml\\artifacts\\crop_health_v4",
+  "model_version": "crop-health-v4.0.0-planttom",
+  "views": 4,
+  "view_description": "original + horizontal flip at scales 1.0 and 0.9 (4 view(s)); first view is baseline",
+  "device": "cuda",
+  "domains": {
+    "pd": {
+      "n": 236,
+      "single_view_accuracy": 0.6695,
+      "tta_4_view_accuracy": 0.6864,
+      "delta": 0.0169,
+      "net_correct_images": 4,
+      "tta_metrics": {
+        "accuracy": 0.6864,
+        "precision_macro": 0.6744,
+        "recall_macro": 0.6337,
+        "f1_macro": 0.6308,
+        "f1_weighted": 0.6858,
+        "support": 236,
+        "views": 4
+      }
+    },
+    "pv": {
+      "n": 266,
+      "single_view_accuracy": 0.9887,
+      "tta_4_view_accuracy": 0.9887,
+      "delta": 0.0,
+      "net_correct_images": 0,
+      "tta_metrics": {
+        "accuracy": 0.9887,
+        "precision_macro": 0.9901,
+        "recall_macro": 0.9887,
+        "f1_macro": 0.9887,
+        "f1_weighted": 0.9887,
+        "support": 266,
+        "views": 4
+      }
+    }
+  }
+}

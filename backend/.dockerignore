@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local state must never be baked into an image.
+agritwin.db
+agritwin.db-shm
+agritwin.db-wal
+uploads/
+.env
+.env.*
+!.env.example
+
+tests/

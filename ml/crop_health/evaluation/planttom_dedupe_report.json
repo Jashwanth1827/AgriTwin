@@ -1,0 +1,259 @@
+{
+  "created_at": "2026-11-25T06:14:57.672146+00:00",
+  "source": {
+    "name": "PlantTom Dataset for Tomato Leaf Disease Detection",
+    "author": "Vaskor Mostafa",
+    "license": "CC BY 4.0",
+    "url": "https://huggingface.co/datasets/vaskormostafa/PlantTom",
+    "archive": "ml/crop_health/data/external/planttom/PlantTom.zip",
+    "archive_sha256": "0a7cfa15c0058b2b9247f843055b1ab30474d8553f944cd6bbe21be8be235ac9",
+    "used_split": "train",
+    "base_manifest": "ml/crop_health/data/field_robust/manifest_dedup.json"
+  },
+  "filters": {
+    "phash_threshold": 10,
+    "dhash_threshold": 11,
+    "intra_source_phash_threshold": 0,
+    "intra_source_dhash_threshold": 0,
+    "held_out_images_protected": 502
+  },
+  "counts": {
+    "base_entries": 4460,
+    "planttom_label_files": 6034,
+    "ambiguous_multi_class_or_unmapped": 8,
+    "missing_image": 0,
+    "exact_duplicate": 47,
+    "near_test_duplicate": 27,
+    "intra_source_perceptual_duplicate": 647,
+    "accepted": 5305,
+    "extended_entries": 9765
+  },
+  "accepted_by_class": {
+    "Tomato___Bacterial_spot": 727,
+    "Tomato___Early_blight": 684,
+    "Tomato___Late_blight": 697,
+    "Tomato___Leaf_Mold": 675,
+    "Tomato___Septoria_leaf_spot": 622,
+    "Tomato___Spider_mites_Two-spotted_spider_mite": 643,
+    "Tomato___Tomato_Yellow_Leaf_Curl_Virus": 614,
+    "Tomato___Tomato_mosaic_virus": 643
+  },
+  "skipped_examples": [
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/000ec6ea-9063-4c33-8abe-d58ca8a88878___PSU_CG-2169_JPG.rf.edbc35c76902f05f5413f276c888ef8c.jpg",
+      "label": "Tomato___Tomato_mosaic_virus",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Tomato_mosaic_virus/0000.jpg",
+      "phash_distance": 2,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/00c07a77-15e6-4815-92d4-8d1e1afb7f3c___PSU_CG-2052_JPG.rf.3fb5e7b023590710b58b479c845d4462.jpg",
+      "label": "Tomato___Tomato_mosaic_virus",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Tomato_mosaic_virus/0010.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/00f16858-f392-4d9e-ad9f-efab8049a13f___JR_Sept-L-S-8368_JPG.rf.e434dd7386317a28eb8c5864d0df4936.jpg",
+      "label": "Tomato___Septoria_leaf_spot",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Septoria_leaf_spot/0005.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/02626a44-a613-4402-a6b0-243858736e32___GCREC_Bact-Sp-3191_JPG.rf.924b2864bab8e42b78e1d0fe9b1efe40.jpg",
+      "label": "Tomato___Bacterial_spot",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Bacterial_spot/0011.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/04fcd6e4-a96e-49ba-b67a-32b88337b505___GCREC_Bact-Sp-3689_JPG.rf.e7fec957397f500d7c5fd010d03c6156.jpg",
+      "label": "Tomato___Bacterial_spot",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Bacterial_spot/0027.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/04fcd6e4-a96e-49ba-b67a-32b88337b505___GCREC_Bact-Sp-3689_JPG.rf.ef53e8e0ec7dfa0a6d5e4eec2ee09433.jpg",
+      "label": "Tomato___Bacterial_spot",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Bacterial_spot/0027.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/06ac210d-bdb1-4224-9053-c218cb14fa60___GCREC_Bact-Sp-3220_JPG.rf.4eedf6d7e3ca66263d9600770198d73f.jpg",
+      "label": "Tomato___Bacterial_spot",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Bacterial_spot/0035.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/06ac210d-bdb1-4224-9053-c218cb14fa60___GCREC_Bact-Sp-3220_JPG.rf.7560e6bdea14e0b00ad3bc41c4d23f30.jpg",
+      "label": "Tomato___Bacterial_spot",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Bacterial_spot/0035.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/076334e5-f0a2-4f7a-b936-02a89ddd0cf5___Crnl_L-Mold-8857_JPG.rf.d452a3b3c392dbffd6993bc3414e7c1b.jpg",
+      "label": "Tomato___Leaf_Mold",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Leaf_Mold/0049.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/5125393a-d835-478f-acf2-d40bfa421d5b___UF-GRC_BS_Lab-Leaf-0458_JPG.rf.6e26914a749b506077b596f4c8a63aa9.jpg",
+      "label": "Tomato___Bacterial_spot",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Bacterial_spot/0041.jpg",
+      "phash_distance": 9,
+      "dhash_distance": 8
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/6447731_orig_jpg.rf.e9e169d50292043d1322825d3d0eae27.jpg",
+      "label": "Tomato___Septoria_leaf_spot",
+      "matched_test": "ml/crop_health/data/plantdoc/test/Tomato Septoria leaf spot/6447731_orig.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/Early-Blight-271-_JPG.rf.4bc3ed6bce60ff6ba7069fe3c6929146.jpg",
+      "label": "Tomato___Early_blight",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Early_blight/0022.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/Early-Blight-311-_JPG.rf.eb01731c2075355dfe10a3d5ee33e062.jpg",
+      "label": "Tomato___Early_blight",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Early_blight/0043.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/Early-Blight-311-_JPG.rf.ee98c085f662624392e5eeff3060ace0.jpg",
+      "label": "Tomato___Early_blight",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Early_blight/0043.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/early_blight1-150x150_jpg.rf.3bd93582867a4c4d19147e82d9c71660.jpg",
+      "label": "Tomato___Early_blight",
+      "matched_test": "ml/crop_health/data/plantdoc/test/Tomato Early blight leaf/early_blight1-150x150.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 1
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/early_blight1-150x150_jpg.rf.7892e3c68338965a32a1e4aed47eb253.jpg",
+      "label": "Tomato___Early_blight",
+      "matched_test": "ml/crop_health/data/plantdoc/test/Tomato Early blight leaf/early_blight1-150x150.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 1
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/ill-tomato-of-tomato-mosaic-virus-DBE17N_jpg.rf.1759ef92637fdfe6468f64bf32c049c4.jpg",
+      "label": "Tomato___Tomato_mosaic_virus",
+      "matched_test": "ml/crop_health/data/plantdoc/test/Tomato leaf mosaic virus/ill-tomato-of-tomato-mosaic-virus-DBE17N.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/Leaf-Mold-221-_JPG.rf.514350f40e7b4e4ed537f188b495b6b4.jpg",
+      "label": "Tomato___Leaf_Mold",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Leaf_Mold/0034.jpg",
+      "phash_distance": 2,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/Mosaic-Virus-1-_JPG_jpg.rf.b5ef00b85b08f38859a4a804121eb946.jpg",
+      "label": "Tomato___Tomato_mosaic_virus",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Tomato_mosaic_virus/0000.jpg",
+      "phash_distance": 2,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/Mosaic-Virus-2-_JPG.rf.65799893f6e8a114525e6e9233ff8c7b.jpg",
+      "label": "Tomato___Tomato_mosaic_virus",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Tomato_mosaic_virus/0010.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/Mosaic-Virus-67-_JPG.rf.42526a58b44694cfb154138adafb36c6.jpg",
+      "label": "Tomato___Tomato_mosaic_virus",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Tomato_mosaic_virus/0048.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/Mosaic-Virus-67-_JPG_jpg.rf.6f72c3911e02a26eee1d0e36ffea4e45.jpg",
+      "label": "Tomato___Tomato_mosaic_virus",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Tomato_mosaic_virus/0048.jpg",
+      "phash_distance": 2,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/potato-blight-phytophthora-infestans-close-up-of-upper-surface-of-BMMRXC_jpg_rf_6bdbd6977aa5aae4228c5c50d2ca6c3b-transformed_jpeg.rf.dbee320de7a2b520f3c1e1c4f3c6d466.jpg",
+      "label": "Tomato___Late_blight",
+      "matched_test": "ml/crop_health/data/plantdoc/test/Potato leaf early blight/potato-blight-phytophthora-infestans-close-up-of-upper-surface-of-BMMRXC.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/potato-blight-phytophthora-infestans-close-up-of-upper-surface-of-BMMRXC_jpg_rf_6bdbd6977aa5aae4228c5c50d2ca6c3b-transformed_jpeg.rf.ea0b167b58d42be609d4d9a7e509631c.jpg",
+      "label": "Tomato___Late_blight",
+      "matched_test": "ml/crop_health/data/plantdoc/test/Potato leaf early blight/potato-blight-phytophthora-infestans-close-up-of-upper-surface-of-BMMRXC.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/Septoria-Leaf-Spot-179-_JPG.rf.a348416d8517073f965858c6895909fe.jpg",
+      "label": "Tomato___Septoria_leaf_spot",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Septoria_leaf_spot/0022.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/Septoria-Leaf-Spot-257-_JPG.rf.aabfe2a526f9488a1ba87ed499a45920.jpg",
+      "label": "Tomato___Septoria_leaf_spot",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Septoria_leaf_spot/0033.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/planttom/extracted/train/images/Shoemaker_7068-JPG_jpg.rf.990957bffae70ee4aaff770f70d6784e.jpg",
+      "label": "Tomato___Early_blight",
+      "matched_test": "ml/crop_health/data/plantdoc/test/Tomato Early blight leaf/Shoemaker_7068.JPG.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 1
+    }
+  ]
+}

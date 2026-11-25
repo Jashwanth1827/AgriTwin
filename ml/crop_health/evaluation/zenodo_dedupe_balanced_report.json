@@ -1,0 +1,154 @@
+{
+  "created_at": "2026-11-25T08:56:31.214766+00:00",
+  "source": {
+    "name": "Crop Health Monitoring Dataset: Disease Classification in Maize, Tea, Tomatoes, Apples, and Beans",
+    "authors": [
+      "Kimutai Gibson",
+      "Anna F\u00f6rster"
+    ],
+    "license": "CC BY 4.0",
+    "doi": "10.5281/zenodo.10628735",
+    "url": "https://zenodo.org/records/10628735",
+    "direct_download": "https://zenodo.org/api/records/10628735/files/dataset.zip/content",
+    "archive": "ml/crop_health/data/external/zenodo_multicrop/dataset.zip",
+    "archive_sha256": "3e57c79535924608fb4704ed77ab0f1123d3770216117a1779d803fd126ae7d0",
+    "base_manifest": "ml/crop_health/data/field_robust/manifest_dedup.json"
+  },
+  "filters": {
+    "phash_threshold": 10,
+    "dhash_threshold": 11,
+    "intra_source_phash_threshold": 0,
+    "intra_source_dhash_threshold": 0,
+    "held_out_images_protected": 502,
+    "max_per_class": 300
+  },
+  "counts": {
+    "base_entries": 4460,
+    "zenodo_image_files": 6141,
+    "unexpected_layout": 0,
+    "exact_duplicate": 158,
+    "near_test_duplicate": 12,
+    "intra_source_perceptual_duplicate": 4,
+    "capped_out": 1986,
+    "accepted": 1558,
+    "extended_entries": 6018
+  },
+  "unmapped_by_folder": {
+    "Bean_Dataset\\angular_leaf_spot": 330,
+    "Bean_Dataset\\bean_rust": 330,
+    "Bean_Dataset\\healthy": 330,
+    "maize\\Blight": 1146,
+    "tea\\Anthracnose": 100,
+    "tea\\algal leaf": 113,
+    "tea\\healthy": 74
+  },
+  "accepted_by_class": {
+    "Apple___Black_rot": 170,
+    "Apple___Cedar_apple_rust": 157,
+    "Apple___healthy": 46,
+    "Corn_maize___Cercospora_leaf_spot_Gray_leaf_spot": 300,
+    "Corn_maize___Common_rust_": 300,
+    "Corn_maize___healthy": 300,
+    "Tomato___Bacterial_spot": 100,
+    "Tomato___Early_blight": 88,
+    "Tomato___healthy": 97
+  },
+  "skipped_examples": [
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/zenodo_multicrop/extracted/dataset/apple/Apple_cedar_rust/Cedar_rust (100).JPG",
+      "label": "Apple___Cedar_apple_rust",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Apple___Cedar_apple_rust/0017.jpg",
+      "phash_distance": 2,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/zenodo_multicrop/extracted/dataset/apple/Apple_cedar_rust/Cedar_rust (24).JPG",
+      "label": "Apple___Cedar_apple_rust",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Apple___Cedar_apple_rust/0019.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/zenodo_multicrop/extracted/dataset/apple/Apple_cedar_rust/Cedar_rust (99).JPG",
+      "label": "Apple___Cedar_apple_rust",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Apple___Cedar_apple_rust/0006.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/zenodo_multicrop/extracted/dataset/maize/Common_Rust/Corn_Common_Rust (78).JPG",
+      "label": "Corn_maize___Common_rust_",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Corn_maize___Common_rust_/0010.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/zenodo_multicrop/extracted/dataset/maize/Common_Rust/Corn_Common_Rust (81).JPG",
+      "label": "Corn_maize___Common_rust_",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Corn_maize___Common_rust_/0016.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/zenodo_multicrop/extracted/dataset/maize/Gray_Leaf_Spot/Corn_Gray_Spot (106).JPG",
+      "label": "Corn_maize___Cercospora_leaf_spot_Gray_leaf_spot",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Corn_maize___Cercospora_leaf_spot_Gray_leaf_spot/0026.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/zenodo_multicrop/extracted/dataset/maize/Gray_Leaf_Spot/Corn_Gray_Spot (49).JPG",
+      "label": "Corn_maize___Cercospora_leaf_spot_Gray_leaf_spot",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Corn_maize___Cercospora_leaf_spot_Gray_leaf_spot/0002.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/zenodo_multicrop/extracted/dataset/maize/Healthy/Corn_Health (387).jpg",
+      "label": "Corn_maize___healthy",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Corn_maize___healthy/0028.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/zenodo_multicrop/extracted/dataset/maize/Healthy/Corn_Health (580).jpg",
+      "label": "Corn_maize___healthy",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Corn_maize___healthy/0016.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/zenodo_multicrop/extracted/dataset/maize/Healthy/Corn_Health (658).jpg",
+      "label": "Corn_maize___healthy",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Corn_maize___healthy/0038.jpg",
+      "phash_distance": 2,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/zenodo_multicrop/extracted/dataset/tomatoes/Tomato___Early_blight/00e7c4b2-3005-4558-9cfa-235e356cb7a8___RS_Erly.B 7844.JPG",
+      "label": "Tomato___Early_blight",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___Early_blight/0002.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    },
+    {
+      "reason": "near_test_duplicate",
+      "path": "ml/crop_health/data/external/zenodo_multicrop/extracted/dataset/tomatoes/Tomato___healthy/00bce074-967b-4d50-967a-31fdaa35e688___RS_HL 0223.JPG",
+      "label": "Tomato___healthy",
+      "matched_test": "ml/crop_health/data/plantvillage_subset/Tomato___healthy/0008.jpg",
+      "phash_distance": 0,
+      "dhash_distance": 0
+    }
+  ]
+}

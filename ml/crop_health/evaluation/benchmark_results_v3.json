@@ -1,0 +1,255 @@
+{
+  "created_at": "2026-11-24T19:48:02.267119+00:00",
+  "metadata_version": "crop-health-v3.0.0-convnext",
+  "device_detail": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "torch_version": "2.7.1+cu128",
+  "num_classes": 38,
+  "results": {
+    "efficientnet_b0": {
+      "parameters": 4056226,
+      "trainable_parameters": 4056226,
+      "model_size_mb": 15.47,
+      "device": "cuda",
+      "input_size": 192,
+      "flops": {
+        "macs": 282730368,
+        "gflops": 0.5655
+      },
+      "latency": [
+        {
+          "batch_size": 1,
+          "ms_per_batch": 42.315,
+          "ms_per_image": 42.315,
+          "images_per_second": 23.6,
+          "amp": false
+        },
+        {
+          "batch_size": 8,
+          "ms_per_batch": 44.766,
+          "ms_per_image": 5.596,
+          "images_per_second": 178.7,
+          "amp": false
+        },
+        {
+          "batch_size": 32,
+          "ms_per_batch": 44.055,
+          "ms_per_image": 1.377,
+          "images_per_second": 726.4,
+          "amp": false
+        }
+      ],
+      "peak_gpu_memory_mb": 271.3
+    },
+    "efficientnet_b3": {
+      "parameters": 10754638,
+      "trainable_parameters": 10754638,
+      "model_size_mb": 41.03,
+      "device": "cuda",
+      "input_size": 192,
+      "flops": {
+        "macs": 706719104,
+        "gflops": 1.4134
+      },
+      "latency": [
+        {
+          "batch_size": 1,
+          "ms_per_batch": 66.745,
+          "ms_per_image": 66.745,
+          "images_per_second": 15.0,
+          "amp": false
+        },
+        {
+          "batch_size": 8,
+          "ms_per_batch": 68.618,
+          "ms_per_image": 8.577,
+          "images_per_second": 116.6,
+          "amp": false
+        },
+        {
+          "batch_size": 32,
+          "ms_per_batch": 73.608,
+          "ms_per_image": 2.3,
+          "images_per_second": 434.7,
+          "amp": false
+        }
+      ],
+      "peak_gpu_memory_mb": 414.9
+    },
+    "efficientnet_v2_s": {
+      "parameters": 20226166,
+      "trainable_parameters": 20226166,
+      "model_size_mb": 77.16,
+      "device": "cuda",
+      "input_size": 192,
+      "flops": {
+        "macs": 2093881600,
+        "gflops": 4.1878
+      },
+      "latency": [
+        {
+          "batch_size": 1,
+          "ms_per_batch": 94.859,
+          "ms_per_image": 94.859,
+          "images_per_second": 10.5,
+          "amp": false
+        },
+        {
+          "batch_size": 8,
+          "ms_per_batch": 99.412,
+          "ms_per_image": 12.426,
+          "images_per_second": 80.5,
+          "amp": false
+        },
+        {
+          "batch_size": 32,
+          "ms_per_batch": 95.352,
+          "ms_per_image": 2.98,
+          "images_per_second": 335.6,
+          "amp": false
+        }
+      ],
+      "peak_gpu_memory_mb": 263.6
+    },
+    "resnet50": {
+      "parameters": 23585894,
+      "trainable_parameters": 23585894,
+      "model_size_mb": 89.97,
+      "device": "cuda",
+      "input_size": 192,
+      "flops": {
+        "macs": 3002871808,
+        "gflops": 6.0057
+      },
+      "latency": [
+        {
+          "batch_size": 1,
+          "ms_per_batch": 31.509,
+          "ms_per_image": 31.509,
+          "images_per_second": 31.7,
+          "amp": false
+        },
+        {
+          "batch_size": 8,
+          "ms_per_batch": 31.421,
+          "ms_per_image": 3.928,
+          "images_per_second": 254.6,
+          "amp": false
+        },
+        {
+          "batch_size": 32,
+          "ms_per_batch": 43.604,
+          "ms_per_image": 1.363,
+          "images_per_second": 733.9,
+          "amp": false
+        }
+      ],
+      "peak_gpu_memory_mb": 347.2
+    },
+    "mobilenet_v3_large": {
+      "parameters": 4250710,
+      "trainable_parameters": 4250710,
+      "model_size_mb": 16.22,
+      "device": "cuda",
+      "input_size": 192,
+      "flops": {
+        "macs": 158961280,
+        "gflops": 0.3179
+      },
+      "latency": [
+        {
+          "batch_size": 1,
+          "ms_per_batch": 33.266,
+          "ms_per_image": 33.266,
+          "images_per_second": 30.1,
+          "amp": false
+        },
+        {
+          "batch_size": 8,
+          "ms_per_batch": 33.401,
+          "ms_per_image": 4.175,
+          "images_per_second": 239.5,
+          "amp": false
+        },
+        {
+          "batch_size": 32,
+          "ms_per_batch": 31.839,
+          "ms_per_image": 0.995,
+          "images_per_second": 1005.0,
+          "amp": false
+        }
+      ],
+      "peak_gpu_memory_mb": 200.0
+    },
+    "convnext_tiny": {
+      "parameters": 27849350,
+      "trainable_parameters": 27849350,
+      "model_size_mb": 106.24,
+      "device": "cuda",
+      "input_size": 192,
+      "flops": {
+        "macs": 3272916480,
+        "gflops": 6.5458
+      },
+      "latency": [
+        {
+          "batch_size": 1,
+          "ms_per_batch": 31.906,
+          "ms_per_image": 31.906,
+          "images_per_second": 31.3,
+          "amp": false
+        },
+        {
+          "batch_size": 8,
+          "ms_per_batch": 32.079,
+          "ms_per_image": 4.01,
+          "images_per_second": 249.4,
+          "amp": false
+        },
+        {
+          "batch_size": 32,
+          "ms_per_batch": 138.317,
+          "ms_per_image": 4.322,
+          "images_per_second": 231.4,
+          "amp": false
+        }
+      ],
+      "peak_gpu_memory_mb": 399.9
+    },
+    "convnext_small": {
+      "parameters": 49483910,
+      "trainable_parameters": 49483910,
+      "model_size_mb": 188.77,
+      "device": "cuda",
+      "input_size": 192,
+      "flops": {
+        "macs": 6379335168,
+        "gflops": 12.7587
+      },
+      "latency": [
+        {
+          "batch_size": 1,
+          "ms_per_batch": 54.548,
+          "ms_per_image": 54.548,
+          "images_per_second": 18.3,
+          "amp": false
+        },
+        {
+          "batch_size": 8,
+          "ms_per_batch": 66.347,
+          "ms_per_image": 8.293,
+          "images_per_second": 120.6,
+          "amp": false
+        },
+        {
+          "batch_size": 32,
+          "ms_per_batch": 267.282,
+          "ms_per_image": 8.353,
+          "images_per_second": 119.7,
+          "amp": false
+        }
+      ],
+      "peak_gpu_memory_mb": 482.4
+    }
+  },
+  "note": "MACs counted with forward hooks (Conv2d/Linear); GFLOPs = 2 x MACs. Latency includes only the forward pass, not preprocessing or network I/O. FPS is the reciprocal of ms/image for the stated batch size."
+}

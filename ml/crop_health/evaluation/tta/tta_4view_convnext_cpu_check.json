@@ -1,0 +1,40 @@
+{
+  "created_at": "2026-11-24T19:56:19.749119+00:00",
+  "artifact": "backend\\app\\ml\\artifacts\\crop_health",
+  "model_version": "crop-health-v3.0.0-convnext",
+  "views": 4,
+  "view_description": "original + horizontal flip at scales 1.0 and 0.9 (4 view(s)); first view is baseline",
+  "device": "cpu",
+  "domains": {
+    "pd": {
+      "n": 236,
+      "single_view_accuracy": 0.6907,
+      "tta_4_view_accuracy": 0.7161,
+      "delta": 0.0254,
+      "net_correct_images": 6,
+      "flips_fixed": 9,
+      "flips_broken": 3,
+      "low_confidence": {
+        "n": 48,
+        "single_view_accuracy": 0.3333,
+        "tta_accuracy": 0.4167,
+        "delta": 0.0833
+      },
+      "high_confidence": {
+        "n": 188,
+        "single_view_accuracy": 0.7819,
+        "tta_accuracy": 0.7926,
+        "delta": 0.0106
+      },
+      "tta_metrics": {
+        "accuracy": 0.7161,
+        "precision_macro": 0.7373,
+        "recall_macro": 0.7106,
+        "f1_macro": 0.7093,
+        "f1_weighted": 0.7183,
+        "support": 236,
+        "views": 4
+      }
+    }
+  }
+}

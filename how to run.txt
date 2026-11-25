@@ -1,0 +1,67 @@
+AgriTwin — how to run
+=====================
+
+Method 1: Docker Compose (recommended for demonstration)
+--------------------------------------------------------
+Step 1. Start Docker Desktop and wait until the engine is running.
+
+Step 2. Open PowerShell in the project root (the folder containing docker-compose.yml).
+
+Step 3. Create the environment file:
+    copy .env.example .env
+
+Step 4. Build the images:
+    docker compose build
+
+Step 5. Start the stack:
+    docker compose up -d
+
+Step 6. Check the services:
+    docker compose ps
+You should see three healthy services: db (PostgreSQL 16), backend (FastAPI),
+and frontend (nginx).
+
+Open the application:
+    Frontend ........ http://localhost:5173
+    Backend API ..... http://localhost:8000
+    API docs ........ http://localhost:8000/docs
+    PostgreSQL ...... localhost:5432
+
+Demo login:
+    Email ........... demo@agritwin.in
+    Password ........ Demo@12345
+
+Docker startup runs Alembic migrations and seeds the demo workspace automatically.
+To stop the stack: docker compose down
+Add -v only if you intentionally want to delete the database and upload volumes.
+
+Optional end-to-end check through nginx (Python 3.12):
+    python scripts\smoke_docker.py
+
+
+Method 2: Local development (without Docker)
+--------------------------------------------
+Terminal 1 — backend:
+    cd backend
+    python -m venv .venv
+    .\.venv\Scripts\Activate.ps1
+    pip install -r requirements-dev.txt
+    uvicorn app.main:app --reload
+
+Terminal 2 — frontend:
+    cd frontend
+    npm install
+    npm run dev
+
+Open http://localhost:5173 and sign in with the demo credentials above.
+The backend creates a SQLite database, upload directories and the demo seed on first start.
+
+
+Verification commands
+---------------------
+    cd backend; python -m pytest -q --disable-warnings   # 76 tests
+    cd frontend; npm test                                # 26 tests
+    cd frontend; npm run build                           # production build
+    python scripts\smoke_api.py                          # real CNN + Grad-CAM end to end
+
+See README.md and docs/FINAL_REPORT.md for architecture, model metrics and known limitations.

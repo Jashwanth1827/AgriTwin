@@ -1,0 +1,105 @@
+{
+  "source_manifest": "C:\\Users\\arvap\\OneDrive\\Documents\\Desktop\\majorp\\ml\\crop_health\\data\\field_robust\\manifest.json",
+  "output_manifest": "C:\\Users\\arvap\\OneDrive\\Documents\\Desktop\\majorp\\ml\\crop_health\\data\\field_robust\\manifest_dedup.json",
+  "original_entries": 4472,
+  "cleaned_entries": 4460,
+  "removed_entries": 12,
+  "removed": [
+    {
+      "path": "ml/crop_health/data/plantdoc/train/Blueberry leaf/blueberry-leaves-normal-above-and-iron-deficient-below-bgahf8.jpg",
+      "label": "Blueberry___healthy",
+      "label_index": 4,
+      "domain": "pd",
+      "split": "train",
+      "source_class": "Blueberry leaf"
+    },
+    {
+      "path": "ml/crop_health/data/plantdoc/train/Corn leaf blight/IMG_42231.jpg",
+      "label": "Corn_maize___Northern_Leaf_Blight",
+      "label_index": 10,
+      "domain": "pd",
+      "split": "train",
+      "source_class": "Corn leaf blight"
+    },
+    {
+      "path": "ml/crop_health/data/plantdoc/train/Corn Gray leaf spot/2015070295153021.jpg",
+      "label": "Corn_maize___Cercospora_leaf_spot_Gray_leaf_spot",
+      "label_index": 7,
+      "domain": "pd",
+      "split": "train",
+      "source_class": "Corn Gray leaf spot"
+    },
+    {
+      "path": "ml/crop_health/data/plantdoc/train/Corn Gray leaf spot/corn-gray-leaf-spot-f4.jpg",
+      "label": "Corn_maize___Cercospora_leaf_spot_Gray_leaf_spot",
+      "label_index": 7,
+      "domain": "pd",
+      "split": "train",
+      "source_class": "Corn Gray leaf spot"
+    },
+    {
+      "path": "ml/crop_health/data/plantdoc/train/Potato leaf late blight/backus-056-potato-blight.jpg",
+      "label": "Potato___Late_blight",
+      "label_index": 22,
+      "domain": "pd",
+      "split": "train",
+      "source_class": "Potato leaf late blight"
+    },
+    {
+      "path": "ml/crop_health/data/plantdoc/train/Potato leaf early blight/1421_0.jpeg_itok=FMtmgePj.jpg",
+      "label": "Potato___Early_blight",
+      "label_index": 20,
+      "domain": "pd",
+      "split": "train",
+      "source_class": "Potato leaf early blight"
+    },
+    {
+      "path": "ml/crop_health/data/plantdoc/train/Potato leaf early blight/5816740026_d42ef24413_Phytophthora-Infestans.jpg",
+      "label": "Potato___Early_blight",
+      "label_index": 20,
+      "domain": "pd",
+      "split": "train",
+      "source_class": "Potato leaf early blight"
+    },
+    {
+      "path": "ml/crop_health/data/plantdoc/train/Potato leaf early blight/irish-blight-symptoms-on-potato-leaves-atmf8b.jpg",
+      "label": "Potato___Early_blight",
+      "label_index": 20,
+      "domain": "pd",
+      "split": "train",
+      "source_class": "Potato leaf early blight"
+    },
+    {
+      "path": "ml/crop_health/data/plantdoc/train/Tomato Septoria leaf spot/tomato_V8.jpg",
+      "label": "Tomato___Septoria_leaf_spot",
+      "label_index": 33,
+      "domain": "pd",
+      "split": "val",
+      "source_class": "Tomato Septoria leaf spot"
+    },
+    {
+      "path": "ml/crop_health/data/plantdoc/train/Tomato Septoria leaf spot/early-blight-septoria-ls-fig-3.jpg",
+      "label": "Tomato___Septoria_leaf_spot",
+      "label_index": 33,
+      "domain": "pd",
+      "split": "train",
+      "source_class": "Tomato Septoria leaf spot"
+    },
+    {
+      "path": "ml/crop_health/data/plantdoc/train/Tomato leaf yellow virus/tylcv-seminar-1-638.jpg",
+      "label": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+      "label_index": 37,
+      "domain": "pd",
+      "split": "train",
+      "source_class": "Tomato leaf yellow virus"
+    },
+    {
+      "path": "ml/crop_health/data/plantdoc/train/Potato leaf late blight/24064_1.jpg",
+      "label": "Potato___Late_blight",
+      "label_index": 22,
+      "domain": "pd",
+      "split": "train",
+      "source_class": "Potato leaf late blight"
+    }
+  ]
+}
