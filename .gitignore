@@ -40,7 +40,12 @@ ml/crop_health/data/external/
 
 # Ad-hoc smoke-test downloads are evidence on this machine, not source files.
 downloads/
-presentation/assets/_leaf_b64.txt
+
+# Generated evaluation images and old presentation binaries are not source files.
+ml/crop_health/evaluation/**/gradcam/
+presentation/*.pdf
+presentation/*.pptx
+presentation/assets/
 
 # OS noise
 .DS_Store
