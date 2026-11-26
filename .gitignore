@@ -46,6 +46,7 @@ ml/crop_health/evaluation/**/gradcam/
 presentation/*.pdf
 presentation/*.pptx
 !presentation/AgriTwin_Final_Presentation.pptx
+!presentation/AgriTwin_Final_Presentation_Review1_Style.pptx
 presentation/assets/
 
 # OS noise
