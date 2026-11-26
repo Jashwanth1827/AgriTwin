@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { mergeLiveRates, SOUTH_INDIA_STATES } from "../lib/liveRates";
-import type { LiveRatesResponse } from "../types";
+import {
+  mergeLiveRates,
+  rankLiveRatesByLocation,
+  SOUTH_INDIA_STATES,
+  TELANGANA_ANDHRA_PRADESH,
+} from "../lib/liveRates";
+import type { Farm, LiveRatePoint, LiveRatesResponse } from "../types";
 
 function response(
   state: string,
@@ -77,6 +82,22 @@ describe("mergeLiveRates", () => {
     expect(merged.coverage_note).toContain(SOUTH_INDIA_STATES.join(", "));
   });
 
+  it("merges a Telangana + Andhra Pradesh priority region", () => {
+    const merged = mergeLiveRates(
+      [response("Andhra Pradesh"), response("Telangana")],
+      TELANGANA_ANDHRA_PRADESH,
+      "Telangana + Andhra Pradesh",
+    );
+
+    expect(merged.state).toBe("Telangana + Andhra Pradesh");
+    expect(merged.records.map((row) => row.state)).toEqual([
+      "Andhra Pradesh",
+      "Telangana",
+    ]);
+    expect(merged.coverage_note).toContain("Telangana, Andhra Pradesh");
+    expect(merged.coverage_note).toContain("2/2 states with live rows");
+  });
+
   it("caps the merged table and keeps warnings visible", () => {
     const many = Array.from({ length: 20 }, (_, index) =>
       response("Karnataka", {
@@ -108,5 +129,56 @@ describe("mergeLiveRates", () => {
     expect(() => mergeLiveRates([{ ...response("Kerala"), records: [] }])).toThrow(
       "No live rates available for South India.",
     );
+  });
+});
+
+describe("rankLiveRatesByLocation", () => {
+  const farm = {
+    id: 1,
+    name: "Kisan Green Farm",
+    district: "Nashik",
+    state: "Maharashtra",
+  } as Farm;
+
+  const row = (district: string, state: string, market: string): LiveRatePoint => ({
+    date: "2026-11-25",
+    state,
+    district,
+    market,
+    commodity: "Onion",
+    variety: "Red",
+    grade: "FAQ",
+    min_price: 1800,
+    max_price: 3200,
+    modal_price: 2500,
+    fetched_at: "2026-11-25T13:00:53Z",
+  });
+
+  it("puts the farmer's district first, then the same state, then other rows", () => {
+    const ranked = rankLiveRatesByLocation(
+      [
+        row("Pune", "Maharashtra", "Pune Market"),
+        row("Nashik", "Maharashtra", "Lasalgaon"),
+        row("Meerut", "Uttar Pradesh", "Meerut APMC"),
+        row("Nashik", "Maharashtra", "Pimpalgaon"),
+      ],
+      farm,
+    );
+
+    expect(ranked.map((item) => item.market)).toEqual([
+      "Lasalgaon",
+      "Pimpalgaon",
+      "Pune Market",
+      "Meerut APMC",
+    ]);
+  });
+
+  it("falls back to modal price when no farm is selected", () => {
+    const cheap = { ...row("Pune", "Maharashtra", "Cheap"), modal_price: 1000 };
+    const dear = { ...row("Nashik", "Maharashtra", "Dear"), modal_price: 3000 };
+    expect(rankLiveRatesByLocation([cheap, dear], null).map((item) => item.market)).toEqual([
+      "Dear",
+      "Cheap",
+    ]);
   });
 });

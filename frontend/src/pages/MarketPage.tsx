@@ -6,6 +6,7 @@ import {
   CloudDownload,
   Gauge,
   LineChart as LineChartIcon,
+  MapPin,
   Radio,
   RefreshCw,
   Store,
@@ -24,8 +25,16 @@ import {
   YAxis,
 } from "recharts";
 
-import { api } from "../lib/api";
-import { mergeLiveRates, SOUTH_INDIA_FILTER, SOUTH_INDIA_STATES } from "../lib/liveRates";
+import { ApiError, api } from "../lib/api";
+import {
+  mergeLiveRates,
+  rankLiveRatesByLocation,
+  SOUTH_INDIA_FILTER,
+  SOUTH_INDIA_STATES,
+  TELANGANA_ANDHRA_FILTER,
+  TELANGANA_ANDHRA_PRADESH,
+} from "../lib/liveRates";
+import { useFarms } from "../hooks/useReference";
 import {
   formatCurrency,
   formatDate,
@@ -77,28 +86,50 @@ export default function MarketPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showAllMandis, setShowAllMandis] = useState(false);
+  // undefined = use the first farm automatically; null = manual location entry.
+  const [farmId, setFarmId] = useState<number | null | undefined>(undefined);
+  const [liveDistrict, setLiveDistrict] = useState("");
 
+  const farms = useFarms();
   const crops = useQuery({
     queryKey: ["market-crops"],
     queryFn: () => api.get<{ crops: MarketCropInfo[]; unit: string }>("/market/crops"),
   });
 
   const activeCrop = crop || crops.data?.crops[0]?.crop || "";
-  const isSouthIndia = liveState === SOUTH_INDIA_FILTER;
+  const activeFarmId = farmId === undefined ? (farms.data?.[0]?.id ?? 0) : farmId;
+  const selectedFarm = farms.data?.find((item) => item.id === activeFarmId) ?? null;
+  const locationState = selectedFarm?.state || liveState;
+  const locationDistrict = selectedFarm?.district || liveDistrict;
+  const isSouthIndia = locationState === SOUTH_INDIA_FILTER;
+  const isTelanganaAndhra = locationState === TELANGANA_ANDHRA_FILTER;
+  const isRegional = isSouthIndia || isTelanganaAndhra;
+  const regionStates = isTelanganaAndhra ? TELANGANA_ANDHRA_PRADESH : SOUTH_INDIA_STATES;
+  const regionLabel = isTelanganaAndhra ? "Telangana + Andhra Pradesh" : "South India";
 
   const liveRates = useQuery({
-    queryKey: ["market-live-rates", activeCrop, liveState, liveNonce],
+    queryKey: ["market-live-rates", activeCrop, activeFarmId, locationState, locationDistrict, liveNonce],
     queryFn: async () => {
       const refresh = liveNonce > 0;
-      if (!isSouthIndia) {
-        return api.get<LiveRatesResponse>(
-          `/market/live-rates?crop=${encodeURIComponent(activeCrop)}&state=${encodeURIComponent(liveState)}&limit=50&refresh=${refresh}`,
-        );
+      if (!isRegional) {
+        const fetchForLocation = (district: string) =>
+          api.get<LiveRatesResponse>(
+            `/market/live-rates?crop=${encodeURIComponent(activeCrop)}&state=${encodeURIComponent(locationState)}${district ? `&district=${encodeURIComponent(district)}` : ""}&limit=100&refresh=${refresh}`,
+          );
+        try {
+          return await fetchForLocation(locationDistrict);
+        } catch (error) {
+          // A district can legitimately have no rows in the public feed.
+          // Fall back to the farmer's state instead of showing a failure.
+          if (!(error instanceof ApiError && error.status === 404)) throw error;
+          if (!locationDistrict) throw error;
+          return fetchForLocation("");
+        }
       }
 
-      const perStateLimit = Math.ceil(50 / SOUTH_INDIA_STATES.length);
+      const perStateLimit = Math.ceil(50 / regionStates.length);
       const settled = await Promise.allSettled(
-        SOUTH_INDIA_STATES.map((state) =>
+        regionStates.map((state) =>
           api.get<LiveRatesResponse>(
             `/market/live-rates?crop=${encodeURIComponent(activeCrop)}&state=${encodeURIComponent(state)}&limit=${perStateLimit}&refresh=${refresh}`,
           ),
@@ -109,9 +140,9 @@ export default function MarketPage() {
       );
       if (responses.length === 0) {
         const failure = settled.find((result) => result.status === "rejected");
-        throw failure?.reason ?? new Error("No live rates available for South India.");
+        throw failure?.reason ?? new Error(`No live rates available for ${regionLabel}.`);
       }
-      return mergeLiveRates(responses);
+      return mergeLiveRates(responses, regionStates, regionLabel);
     },
     enabled: activeCrop.length > 0 && tab === "live",
     retry: false,
@@ -186,6 +217,24 @@ export default function MarketPage() {
 
   const activeForecast = forecast.data ?? forecasts.data?.[0] ?? null;
 
+  const rankedRates = useMemo(
+    () => rankLiveRatesByLocation(liveRates.data?.records ?? [], selectedFarm),
+    [liveRates.data, selectedFarm],
+  );
+  const bestRate = rankedRates[0] ?? null;
+  const localRateCount = selectedFarm
+    ? rankedRates.filter(
+        (row) =>
+          (row.district || "").trim().toLowerCase() ===
+          selectedFarm.district.trim().toLowerCase(),
+      ).length
+    : 0;
+  const locationDescription = selectedFarm
+    ? localRateCount > 0
+      ? `Using ${selectedFarm.name}: ${localRateCount} mandi row${localRateCount === 1 ? "" : "s"} in ${selectedFarm.district} district shown first.`
+      : `Using ${selectedFarm.name}: no rows for ${selectedFarm.district} district in this feed, showing ${selectedFarm.state} mandis instead.`
+    : "Choose your farm to show its district first, or enter a state and district manually.";
+
   const freshnessDays = liveRates.data?.data_freshness_days ?? null;
   const freshnessText =
     freshnessDays === null
@@ -232,6 +281,21 @@ export default function MarketPage() {
       ) : null}
 
       <div className="flex flex-wrap items-end gap-3 rounded-xl border bg-card p-4">
+        <Field label="My farm" className="min-w-52">
+          <Select
+            value={activeFarmId ? String(activeFarmId) : ""}
+            onChange={(event) =>
+              setFarmId(event.target.value ? Number(event.target.value) : null)
+            }
+          >
+            <option value="">Choose manually</option>
+            {(farms.data ?? []).map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name} · {item.district}, {item.state}
+              </option>
+            ))}
+          </Select>
+        </Field>
         <Field label="Crop" className="min-w-44">
           <Select
             value={activeCrop}
@@ -286,29 +350,53 @@ export default function MarketPage() {
                 <Radio className="h-4 w-4 text-primary" /> Today’s mandi price
               </CardTitle>
               <CardDescription>
-                Government mandi prices for {activeCrop || "your crop"}. Use this before you sell.
-                {isSouthIndia ? " Showing nearby South Indian states together." : ""}
+                Government mandi prices for {activeCrop || "your crop"}. Use this before you sell.{" "}
+                <span className="font-medium text-foreground">{locationDescription}</span>
+                {isRegional ? ` Showing ${regionLabel} mandis together.` : ""}
               </CardDescription>
             </div>
             <div className="flex flex-wrap items-end gap-2">
               <Field label="Your state" className="w-44">
                 <Input
-                  value={isSouthIndia ? "South India (5 states)" : liveState}
+                  value={
+                    isRegional ? `${regionLabel} (${regionStates.length} states)` : locationState
+                  }
                   placeholder="All states"
-                  readOnly={isSouthIndia}
+                  readOnly={isRegional || Boolean(selectedFarm)}
                   onChange={(event) => setLiveState(event.target.value)}
+                />
+              </Field>
+              <Field label="Your district" className="w-44">
+                <Input
+                  value={isRegional ? "" : locationDistrict}
+                  placeholder="All districts"
+                  readOnly={isRegional || Boolean(selectedFarm)}
+                  onChange={(event) => setLiveDistrict(event.target.value)}
                 />
               </Field>
               <Button
                 variant={isSouthIndia ? "default" : "outline"}
-                onClick={() =>
+                onClick={() => {
+                  setFarmId(null);
                   setLiveState((current) =>
                     current === SOUTH_INDIA_FILTER ? "" : SOUTH_INDIA_FILTER,
-                  )
-                }
+                  );
+                }}
                 loading={liveRates.isFetching && isSouthIndia}
               >
                 South India
+              </Button>
+              <Button
+                variant={isTelanganaAndhra ? "default" : "outline"}
+                onClick={() => {
+                  setFarmId(null);
+                  setLiveState((current) =>
+                    current === TELANGANA_ANDHRA_FILTER ? "" : TELANGANA_ANDHRA_FILTER,
+                  );
+                }}
+                loading={liveRates.isFetching && isTelanganaAndhra}
+              >
+                Telangana + Andhra
               </Button>
               <Button
                 variant="outline"
@@ -331,17 +419,19 @@ export default function MarketPage() {
                   The bundled Agmarknet series in the Prices tab is still available offline.
                 </p>
               </>
-            ) : liveRates.data && liveRates.data.records.length > 0 ? (
+            ) : liveRates.data && rankedRates.length > 0 ? (
               <>
                 <div className="rounded-xl border bg-primary/5 p-4 sm:p-5">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Best price today</p>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        {selectedFarm ? "Best nearby price today" : "Best price today"}
+                      </p>
                       <p className="mt-1 text-3xl font-bold text-primary sm:text-4xl">
-                        {formatCurrency(liveRates.data.records[0].modal_price / 100, 2)} / kg
+                        {formatCurrency((bestRate?.modal_price ?? 0) / 100, 2)} / kg
                       </p>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        {formatCurrency(liveRates.data.records[0].modal_price, 0)} per quintal
+                        {formatCurrency(bestRate?.modal_price ?? 0, 0)} per quintal
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
@@ -358,18 +448,12 @@ export default function MarketPage() {
                     </div>
                   </div>
                   <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                    <span className="font-medium">
-                      {liveRates.data.records[0].market || "Mandi"}
-                    </span>
-                    {liveRates.data.records[0].district ? (
-                      <span className="text-muted-foreground">
-                        {liveRates.data.records[0].district}
-                      </span>
+                    <span className="font-medium">{bestRate?.market || "Mandi"}</span>
+                    {bestRate?.district ? (
+                      <span className="text-muted-foreground">{bestRate.district}</span>
                     ) : null}
-                    {liveRates.data.records[0].state ? (
-                      <span className="text-muted-foreground">
-                        {liveRates.data.records[0].state}
-                      </span>
+                    {bestRate?.state ? (
+                      <span className="text-muted-foreground">{bestRate.state}</span>
                     ) : null}
                   </div>
                   <p className="mt-3 text-sm">{simpleAdvice}</p>
@@ -377,7 +461,9 @@ export default function MarketPage() {
 
                 <div>
                   <div className="mb-2 flex items-center justify-between gap-2">
-                    <p className="font-medium">Nearby mandis</p>
+                    <p className="flex items-center gap-2 font-medium">
+                      <MapPin className="h-4 w-4 text-primary" /> Nearby mandis
+                    </p>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -385,14 +471,11 @@ export default function MarketPage() {
                     >
                       {showAllMandis
                         ? "Show fewer"
-                        : `See all ${liveRates.data.records.length}`}
+                        : `See all ${rankedRates.length}`}
                     </Button>
                   </div>
                   <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                    {(showAllMandis
-                      ? liveRates.data.records
-                      : liveRates.data.records.slice(0, 3)
-                    ).map((row, index) => (
+                    {(showAllMandis ? rankedRates : rankedRates.slice(0, 3)).map((row, index) => (
                       <div
                         key={`${row.market}-${row.variety}-${row.date}-${index}`}
                         className="rounded-lg border p-3"
@@ -443,7 +526,7 @@ export default function MarketPage() {
                   <div className="rounded-lg border p-3">
                     <p className="text-xs uppercase text-muted-foreground">Latest modal price</p>
                     <p className="mt-1 text-2xl font-semibold">
-                      {formatCurrency(liveRates.data.records[0].modal_price, 0)}
+                      {formatCurrency(bestRate?.modal_price ?? 0, 0)}
                     </p>
                     <p className="text-xs text-muted-foreground">{liveRates.data.unit}</p>
                   </div>
@@ -460,7 +543,7 @@ export default function MarketPage() {
                   </div>
                   <div className="rounded-lg border p-3">
                     <p className="text-xs uppercase text-muted-foreground">Live observations</p>
-                    <p className="mt-1 text-2xl font-semibold">{liveRates.data.records.length}</p>
+                    <p className="mt-1 text-2xl font-semibold">{rankedRates.length}</p>
                     <p className="truncate text-xs text-muted-foreground">
                       Commodity: {liveRates.data.commodity_query}
                     </p>
@@ -471,7 +554,7 @@ export default function MarketPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        {isSouthIndia ? <TableHead>State</TableHead> : null}
+                        {isRegional ? <TableHead>State</TableHead> : null}
                         <TableHead>Market</TableHead>
                         <TableHead>District</TableHead>
                         <TableHead>Variety / grade</TableHead>
@@ -482,9 +565,9 @@ export default function MarketPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {liveRates.data.records.map((row, index) => (
+                      {rankedRates.map((row, index) => (
                         <TableRow key={`${row.market}-${row.variety}-${row.date}-${index}`}>
-                          {isSouthIndia ? <TableCell>{row.state || "—"}</TableCell> : null}
+                          {isRegional ? <TableCell>{row.state || "—"}</TableCell> : null}
                           <TableCell className="font-medium">{row.market || "—"}</TableCell>
                           <TableCell>{row.district || "—"}</TableCell>
                           <TableCell>

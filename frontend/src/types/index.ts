@@ -260,6 +260,7 @@ export interface LiveSourceInfo {
 export interface LiveRatesResponse {
   crop: string;
   state: string | null;
+  district?: string | null;
   market: string | null;
   unit: string;
   provider: string;

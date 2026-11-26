@@ -227,12 +227,16 @@ AgriTwin never silently substitutes synthetic data.
 | --- | --- | --- |
 | Crop health | Trained `model.pt`; `model_mode="real"`; Grad-CAM generated | Colour/texture heuristic; `model_mode="demo"`, `is_demo=True`, UI warning |
 | Yield | Trained `model.joblib`; model version `yield-v1.0.0` | Historical state/crop average, flagged as `historical_average` |
-| Market prices | Live official data.gov.in mandi rates plus bundled Agmarknet history | Keyless five-state mirror when no key is set; never synthetic |
+| Market prices | Live official data.gov.in mandi rates filtered to the selected farm’s district first, plus bundled Agmarknet history | Keyless five-state mirror when no key is set; never synthetic |
 | Buyers/offers | User-created records | Seeded records have `is_demo=True` and are labelled in the UI and decisions |
 | Weather | Live Open-Meteo | Graceful "unavailable" state; a risk floor is applied |
 | Transport | OSRM route when available | Geodesic distance × detour factor, flagged `approximate` |
 
 `GET /api/v1/system/status` reports each model's mode, version, metrics and data freshness so the UI and operators can see exactly what is running.
+
+The Market page uses the selected farm's district and state to request `GET /api/v1/market/live-rates?crop=…&state=…&district=…`. Rows from the farmer's district are shown first. When the public feed has no rows for that district, the page falls back to the farmer's state and says so in the UI. The **South India** option merges the five southern states, and the **Telangana + Andhra** option focuses on those two states.
+
+Nationwide official rates require `DATA_GOV_API_KEY` in `.env`. Docker Compose now forwards this variable to the backend; without a key the backend must use the keyless mirror, which covers only Maharashtra, Uttar Pradesh, Punjab, Madhya Pradesh and Karnataka. If the official feed times out for a state outside that mirror, AgriTwin returns a clear retryable error instead of pretending the state is unsupported.
 
 ---
 
@@ -253,7 +257,7 @@ access control if leaf photos are sensitive.
 | `farms` | `GET/POST /farms`, `GET/PATCH/DELETE /farms/{id}`, `GET/POST /crops`, `GET/PATCH/DELETE /crops/{id}` |
 | `crop-health` | `GET /model`, `GET /classes`, `POST /predict`, `GET /predictions`, `GET/DELETE /predictions/{id}` |
 | `yield` | `GET /model`, `POST /predict`, `GET /predictions`, `GET /predictions/{id}`, `GET /readiness/{crop_id}`, `GET /history` |
-| `market` | `GET /crops`, `GET /live-rates`, `GET /prices`, `GET /markets`, `GET /trends`, `POST /forecast`, `GET /forecasts`, `POST /import` |
+| `market` | `GET /crops`, `GET /live-rates?crop=…&state=…&district=…`, `GET /prices`, `GET /markets`, `GET /trends`, `POST /forecast`, `GET /forecasts`, `POST /import` |
 | `buyers` | CRUD `/buyers`, CRUD `/buyers/{id}/offers`, `/offers/{id}` |
 | `transport` | `GET /vehicles`, `POST /estimate`, `GET /estimates` |
 | `weather` | `GET /geocode/search`, `GET /{farm_id}` |
@@ -359,7 +363,7 @@ majorp/
 │   │   ├── schemas/                 # Pydantic request/response schemas
 │   │   ├── services/                # orchestration + decision engine
 │   │   └── main.py                  # app factory, middleware, lifespan
-│   ├── tests/                       # 111 pytest tests
+│   ├── tests/                       # 115 pytest tests
 │   ├── Dockerfile
 │   └── requirements*.txt
 ├── frontend/
@@ -368,7 +372,7 @@ majorp/
 │   │   ├── hooks/                   # reference-data hooks
 │   │   ├── lib/                     # API client, auth context, utilities
 │   │   ├── pages/                   # 10 authenticated pages + auth pages
-│   │   ├── test/                    # 29 Vitest tests
+│   │   ├── test/                    # 32 Vitest tests
 │   │   └── types/
 │   ├── Dockerfile
 │   └── nginx.conf

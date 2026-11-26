@@ -60,6 +60,7 @@ class LiveSourceInfo(BaseModel):
 class LiveRatesResponse(BaseModel):
     crop: str
     state: str | None
+    district: str | None = None
     market: str | None
     unit: str = "INR/quintal"
     provider: str

@@ -74,6 +74,7 @@ def live_rates(
     _user: CurrentUser,
     crop: str = Query(...),
     state: str | None = Query(default=None),
+    district: str | None = Query(default=None),
     market: str | None = Query(default=None),
     limit: int = Query(default=20, ge=1, le=100),
     refresh: bool = Query(default=False),
@@ -83,6 +84,7 @@ def live_rates(
         **live_market_service.fetch_live_rates(
             crop=crop,
             state=state,
+            district=district,
             market=market,
             limit=limit,
             force_refresh=refresh,

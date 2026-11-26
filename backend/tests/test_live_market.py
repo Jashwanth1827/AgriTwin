@@ -204,6 +204,61 @@ def test_live_rates_official_source(client, api_prefix, user_headers, monkeypatc
     assert calls and "api.data.gov.in" in calls[0]
 
 
+@pytest.mark.parametrize("state", ["Telangana", "Andhra Pradesh"])
+def test_live_rates_official_supports_priority_south_states(
+    client, api_prefix, user_headers, monkeypatch, state
+):
+    payload = {
+        "updated_date": OFFICIAL_PAYLOAD["updated_date"],
+        "records": [
+            {
+                **OFFICIAL_PAYLOAD["records"][0],
+                "state": state,
+                "district": "Test district",
+                "market": f"{state} APMC",
+            }
+        ],
+    }
+
+    def handler(url: str, _params: dict) -> FakeResponse:
+        if settings.DATA_GOV_VARIETY_RESOURCE_ID in url:
+            return FakeResponse({"records": []})
+        return FakeResponse(payload)
+
+    _patch_client(monkeypatch, handler)
+    response = client.get(
+        f"{api_prefix}/market/live-rates?crop=Onion&state={state.replace(' ', '%20')}",
+        headers=user_headers,
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["state"] == state
+    assert body["is_official"] is True
+    assert body["records"][0]["state"] == state
+    assert body["records"][0]["market"] == f"{state} APMC"
+
+
+def test_live_rates_can_filter_to_farm_district(
+    client, api_prefix, user_headers, monkeypatch
+):
+    def handler(url: str, _params: dict) -> FakeResponse:
+        if settings.DATA_GOV_VARIETY_RESOURCE_ID in url:
+            return FakeResponse({"records": []})
+        return FakeResponse(OFFICIAL_PAYLOAD)
+
+    _patch_client(monkeypatch, handler)
+    response = client.get(
+        f"{api_prefix}/market/live-rates?crop=Onion&state=Maharashtra&district=Pune",
+        headers=user_headers,
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["district"] == "Pune"
+    assert [row["district"] for row in body["records"]] == ["Pune"]
+    assert body["records"][0]["market"] == "Junnar"
+    assert "Filtered to Pune district" in body["coverage_note"]
+
+
 def test_api_state_filter_maps_agmarknet_spellings():
     assert live_market.api_state_filter("Kerala") == "Keralam"
     assert live_market.api_state_filter("Keralam") == "Keralam"
@@ -292,6 +347,27 @@ def test_keyless_mirror_rejects_unsupported_state(
     )
     assert response.status_code == 422
     assert response.json()["error"]["code"] == "unsupported_state"
+
+
+def test_official_failure_outside_keyless_mirror_reports_retry(
+    client, api_prefix, user_headers, monkeypatch
+):
+    def handler(url: str, _params: dict) -> FakeResponse:
+        assert "api.data.gov.in" in url
+        return FakeResponse({}, status_code=502)
+
+    calls = _patch_client(monkeypatch, handler)
+    response = client.get(
+        f"{api_prefix}/market/live-rates?crop=Onion&state=Telangana&refresh=true",
+        headers=user_headers,
+    )
+    assert response.status_code == 503
+    body = response.json()["error"]
+    assert body["code"] == "official_feed_unavailable"
+    assert "Telangana" in body["message"]
+    assert "retry" in body["message"].lower()
+    assert body["details"]["state"] == "Telangana"
+    assert len(calls) == 1  # no misleading keyless fallback for Telangana
 
 
 def test_live_rates_disabled_provider_returns_503(

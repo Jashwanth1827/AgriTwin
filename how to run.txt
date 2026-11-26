@@ -59,8 +59,8 @@ The backend creates a SQLite database, upload directories and the demo seed on f
 
 Verification commands
 ---------------------
-    cd backend; python -m pytest -q --disable-warnings   # 76 tests
-    cd frontend; npm test                                # 26 tests
+    cd backend; python -m pytest -q --disable-warnings   # 115 tests
+    cd frontend; npm test                                # 32 tests
     cd frontend; npm run build                           # production build
     python scripts\smoke_api.py                          # real CNN + Grad-CAM end to end
 

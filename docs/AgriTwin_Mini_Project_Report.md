@@ -72,7 +72,7 @@ AgriTwin uses a ConvNeXT-Tiny image model to suggest a crop-health class from a 
 
 The project is honest about the difference between real and demonstration data. Live prices come from official government resources when a key is configured; the keyless fallback is clearly labelled, limited to five states and noticeably older. Seeded buyer records are marked as demo. Transport costs are called estimates unless a real route was resolved. Crop-health output is screening support, not a medical-style diagnosis, and the classifier covers 38 labels across 14 crop species.
 
-The deployed crop-health model is crop-health-v3.0.0-convnext. Its unconstrained four-view field accuracy is 0.7161 on 236 PlantDoc test images; a serving-only crop prior raises field accuracy to 0.8093 but is not used as a promotion baseline. The system passed 111 backend tests, 29 frontend tests, a production build and an API smoke check. AgriTwin shows that a farmer-first interface and strict evidence discipline can exist in the same application.
+The deployed crop-health model is crop-health-v3.0.0-convnext. Its unconstrained four-view field accuracy is 0.7161 on 236 PlantDoc test images; a serving-only crop prior raises field accuracy to 0.8093 but is not used as a promotion baseline. The system passed 115 backend tests, 32 frontend tests, a production build and an API smoke check. AgriTwin shows that a farmer-first interface and strict evidence discipline can exist in the same application.
 
 **Keywords:** Digital Twin, Crop Health, Yield Prediction, Mandi Prices, data.gov.in, Decision Support, Explainable AI, Uncertainty, Farmer-first Design
 
@@ -286,7 +286,7 @@ The following capabilities are implemented in AgriTwin. Each one is described in
 - **Maintain farms and crops.** A farmer can add, edit and remove farms and crops. Records include the Indian state, season, soil type, growth stage, expected harvest date and coordinates. Ownership checks ensure that one farmer cannot see another farmer’s data.
 - **Scan a leaf for possible disease.** The farmer uploads a leaf photograph. The system checks the file type, size and dimensions, removes duplicate uploads using SHA-256, runs the image model and returns a class label, confidence, severity text, advisory and Grad-CAM overlay. The result is labelled as real or demo according to the active model mode.
 - **Estimate yield with a range.** The farmer enters crop, season, state and area. The system uses historical production data to estimate yield in quintals per hectare, scales it by area and adds an 80% uncertainty interval. If a trained model is unavailable, the system still shows a historical average but clearly labels it as a fallback.
-- **Check genuine mandi rates.** The market page shows live official rates from two data.gov.in resources when a key is configured. Rows are deduplicated, freshness is shown, and the technical source details are placed behind a data-details panel so the default view stays simple.
+- **Check genuine mandi rates.** The market page shows live official rates from two data.gov.in resources when a key is configured. With a farm selected, it requests that farm's district first and falls back to the state only when the feed has no district rows. Rows are sorted so the farmer's district appears first, and the **Telangana + Andhra** and **South India** buttons merge official state responses. Freshness, source names and the full table remain behind a data-details panel so the default view stays simple.
 - **Compare buyer offers.** The farmer can add buyers and offers with quantity and expiry constraints. The decision engine evaluates which offers are actually eligible for the current harvest quantity before ranking them.
 - **Estimate transport cost.** A vehicle profile and distance are used to estimate cost. If OSRM resolves a real route, the result is based on that route; otherwise the system uses geodesic distance multiplied by a detour factor and labels the result as approximate.
 - **Generate a decision.** The farmer requests a decision for a farm and crop. The system gathers yield, health, price, buyer, harvest and weather inputs, applies the versioned policy and returns SELL, WAIT or INSPECT with a short explanation, risk score, scenarios and revenue bounds.
@@ -301,7 +301,7 @@ Non-functional requirements are often invisible to a casual user, but they deter
 - **Accuracy.** The deployed crop-health configuration has an unconstrained four-view field accuracy of 0.7161 and field macro-F1 of 0.7093 on 236 PlantDoc images. A serving-only crop prior raises field accuracy to 0.8093, but this number is not used as a promotion baseline. The yield model achieved held-out R² of 0.9533 and 80% interval coverage of 0.8492.
 - **Accessibility and clarity.** The farmer-facing pages show one clear decision first. Complex details are available but hidden behind plain-language controls such as View data details. Technical labels are explained in ordinary words wherever possible.
 - **Scalability.** Services are separated into routers and service modules. Docker separates the database, backend and web server. External sources can be enabled or disabled through configuration without rewriting business logic.
-- **Reliability.** If the variety-wise price resource fails, the system falls back to the daily resource. If the official feed fails, it keeps the keyless mirror. If weather is unavailable, a risk floor is applied. Invalid uploads are rejected before inference.
+- **Reliability.** If the variety-wise price resource fails, the system falls back to the daily resource. If the official feed fails in a state covered by the keyless mirror, it uses that labelled mirror; for Telangana, Andhra Pradesh and other states outside the mirror it returns a clear retryable error instead of a misleading unsupported-state message. If weather is unavailable, a risk floor is applied. Invalid uploads are rejected before inference.
 - **Security.** JWT access and refresh tokens, bcrypt hashing, explicit CORS origins, rate limits, ownership checks and upload validation protect user data. Production schema changes are handled by Alembic rather than automatic table creation.
 - **Maintainability.** Decision rules live in a versioned JSON policy. Model metadata controls test-time augmentation and the crop prior. Structured logs include request IDs, and errors use a consistent envelope with code, message, details and request ID.
 
@@ -438,11 +438,11 @@ Wrong-hint checks show why this rule matters. With 5% wrong crop hints accuracy 
 
 **Market evaluation.** Five forecasting candidates—SeasonalNaive, MovingAverage, LinearTrendWeekly, RandomForest and GradientBoosting—were compared using chronological tail validation. The winner was refitted on the full history, and empirical residual intervals were widened as the forecast horizon increased. Sugarcane has only 7 bundled observations and correctly returns an insufficient-data response instead of producing an unreliable forecast.
 
-**Official API verification.** On 25 November 2026, the primary official resource 9ef84268-d588-465a-a308-a864a43d0070 and the companion variety-wise resource 35985678-0d79-46b4-9ed6-6f13308a1d24 both returned records dated 25/11/2026. All 14 supported crops and all five South India filter states returned provider=data_gov, is_demo=false, 0-day freshness and rows from both resources. The keyless mirror remains a labelled fallback limited to five states and was observed to be about 40 days behind the official feed.
+**Official API verification.** On 25 November 2026, the primary official resource 9ef84268-d588-465a-a308-a864a43d0070 and the companion variety-wise resource 35985678-0d79-46b4-9ed6-6f13308a1d24 both returned records dated 25/11/2026. All 14 supported crops and all five South India filter states returned provider=data_gov, is_demo=false, 0-day freshness and rows from both resources. A follow-up on 26 November 2026 returned official Maize rows for Telangana and Andhra Pradesh with 0-day freshness, and district filtering returned only the requested district when that district existed in the feed. The keyless mirror remains a labelled fallback limited to five states and was observed to be about 40 days behind the official feed.
 
 **Decision evaluation.** The decision engine is tested at two levels: 17 unit tests cover the pure rules and 6 API tests cover request handling. Policy version 1.0.1 defines eight risk weights that sum to 1.0. A historical Docker smoke example produced a SELL decision through the mandi channel with medium risk 0.44 and net realisation of ₹6,371.67 per quintal. That number is an example from recorded test data, not a current market quote. No farmer field-trial accuracy is claimed for the decision engine.
 
-**Software evaluation.** The backend passed 111 pytest tests, the frontend passed 29 Vitest tests, the production build succeeded with only a chunk-size warning, the API smoke script passed, and Alembic upgrade/downgrade/upgrade was verified on SQLite. A Docker smoke run passed on 4 November 2026; the Docker daemon was unavailable for a repeat in the current workspace, so that older result is reported with its date rather than presented as a fresh run.
+**Software evaluation.** The backend passed 115 pytest tests, the frontend passed 32 Vitest tests, the production build succeeded with only a chunk-size warning, the API smoke script passed, and Alembic upgrade/downgrade/upgrade was verified on SQLite. A Docker smoke run passed on 4 November 2026; the Docker daemon was unavailable for a repeat in the current workspace, so that older result is reported with its date rather than presented as a fresh run.
 
 **Limits that remain.** Ad-hoc web photo checks were only smoke tests: five downloaded photos produced 2/5 exact matches, or 3/5 if crop mismatch is ignored, and two low-confidence results were routed to INSPECT. They are not a labelled evaluation set and were never used for training. The bundled market window is short, the yield dataset lacks soil and weather features, browser end-to-end tests are not part of the suite, and OSRM routing has no automated test. Stating these limits is part of the evaluation, not a contradiction of it.
 
@@ -616,7 +616,7 @@ On the 236-image PlantDoc field test, four-view augmentation fixed 9 images that
 
 **Yield results.** The 2015 held-out test contained 305 records. MAE was 14.7151 q/ha, RMSE 36.5968 q/ha, R² 0.9533 and MAPE 57.52%. The 80% interval covered the true value in 84.92% of test cases, with mean half-width 17.4339 q/ha. Coverage slightly above the nominal 80% is acceptable and indicates a conservative interval.
 
-**Market and official-rate results.** Five forecasting candidates were compared by chronological tail MAE and the best was refitted. Empirical intervals widened with forecast horizon. On 25 November 2026, official verification returned 14/14 crops and 5/5 South India states with provider=data_gov, is_demo=false, latest_observation_date=2026-11-25 and 0-day freshness, with rows contributed by both official resources. The Agriculture APIs catalogue reported 146 active agriculture resources.
+**Market and official-rate results.** Five forecasting candidates were compared by chronological tail MAE and the best was refitted. Empirical intervals widened with forecast horizon. On 25 November 2026, official verification returned 14/14 crops and 5/5 South India states with provider=data_gov, is_demo=false, latest_observation_date=2026-11-25 and 0-day freshness, with rows contributed by both official resources. On 26 November 2026, Telangana and Andhra Pradesh returned official Maize rows with 0-day freshness, and farm-district filtering returned only matching district rows. The Agriculture APIs catalogue reported 146 active agriculture resources.
 
 **Decision result example.** In a recorded Docker smoke run, the engine selected SELL through the mandi channel with medium risk 0.44 and net realisation ₹6,371.67 per quintal. The example is included to show the shape and readability of the output, not to quote a current market price.
 
@@ -624,13 +624,13 @@ On the 236-image PlantDoc field test, four-view augmentation fixed 9 images that
 
 | Check | Command / Evidence | Result |
 | --- | --- | --- |
-| Backend tests | python -m pytest -q --disable-warnings | 111 passed |
-| Frontend tests | npm test -- --run | 29 passed |
+| Backend tests | python -m pytest -q --disable-warnings | 115 passed |
+| Frontend tests | npm test -- --run | 32 passed |
 | Production build | npm run build | Passed with chunk-size warning only |
 | API smoke | python scripts\smoke_api.py | Passed with real ConvNeXt, TTA and Grad-CAM |
 | Docker smoke | python scripts\smoke_docker.py | Passed on 2026-11-04; daemon unavailable for a fresh re-run |
 | Migrations | alembic upgrade → downgrade → upgrade | Verified on SQLite |
-| Live official rates | GET /api/v1/market/live-rates | 14/14 crops and 5/5 states, 0-day freshness |
+| Live official rates | GET /api/v1/market/live-rates | 14/14 crops, 5/5 South India states; Telangana and Andhra Pradesh district/state views verified on 2026-11-26 |
 
 The results support the project claim in a limited but meaningful way: the implemented system works end to end, its external data is traceable, its model reporting distinguishes controlled and field conditions, and its decision output can be reproduced and explained. They do not claim that the system has been proven in a large farmer field trial, and the report does not make that claim.
 
@@ -648,7 +648,7 @@ The system’s main strength is that it does not hide the hard parts. Field imag
 
 The deployed crop-health artifact remains crop-health-v3.0.0-convnext with SHA-256 fingerprint 4500C4FF14C99D3E7AFEC2F838AA555BADB3809656227CE77340391F14BD3A75. Its unconstrained four-view field accuracy is 0.7161, and the serving-only crop prior raises that to 0.8093. Later candidates were rejected because they did not beat the 0.7161 gate. No retraining or unauthorized promotion is claimed.
 
-The implemented system passed 111 backend tests, 29 frontend tests, a production build and an API smoke check. It is containerised, documented and ready for further evaluation. AgriTwin therefore demonstrates that trustworthy AI assistance and a simple farmer experience are compatible when the interface is designed around a decision and the evidence is preserved underneath.
+The implemented system passed 115 backend tests, 32 frontend tests, a production build and an API smoke check. It is containerised, documented and ready for further evaluation. AgriTwin therefore demonstrates that trustworthy AI assistance and a simple farmer experience are compatible when the interface is designed around a decision and the evidence is preserved underneath.
 
 ## 9.2 Future Scope
 

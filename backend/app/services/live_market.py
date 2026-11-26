@@ -3,9 +3,12 @@
 Two official Agmarknet/data.gov.in resources are combined: the current daily
 mandi-price feed and the variety-wise daily market-price archive, sorted to its
 latest observations. When no API key is configured, the keyless Mandi Price API
-mirror is used for its five supported states. Every response records the real
-provider, contributing resources, source URLs and observation dates so live data
-is never confused with bundled demo data.
+mirror is used for its five supported states. If the official feed is temporarily
+unavailable for a state outside that mirror (for example Telangana or Andhra
+Pradesh), the API reports a retryable error instead of a misleading
+"unsupported state" message. Every response records the real provider,
+contributing resources, source URLs and observation dates so live data is never
+confused with bundled demo data.
 """
 
 from __future__ import annotations
@@ -524,8 +527,8 @@ def _fetch_keyless(
     if state and normalise_state(state) not in KELESS_STATES and state not in KELESS_STATES:
         raise AppError(
             "The keyless live-rate mirror covers only Maharashtra, Uttar Pradesh, "
-            "Punjab, Madhya Pradesh and Karnataka. Configure DATA_GOV_API_KEY for "
-            "nationwide live rates.",
+            "Punjab, Madhya Pradesh and Karnataka. Telangana, Andhra Pradesh, Tamil "
+            "Nadu and Kerala need DATA_GOV_API_KEY for official nationwide rates.",
             status_code=422,
             code="unsupported_state",
             details={"supported_states": sorted(KELESS_STATES)},
@@ -604,6 +607,7 @@ def fetch_live_rates(
     *,
     crop: str,
     state: str | None = None,
+    district: str | None = None,
     market: str | None = None,
     limit: int = 20,
     force_refresh: bool = False,
@@ -618,14 +622,20 @@ def fetch_live_rates(
         )
     crop = next(name for name in CROPS if name.casefold() == crop.casefold())
     state = normalise_state(state)
+    district = district.strip() if district and district.strip() else None
     market = market.strip() if market and market.strip() else None
     limit = max(1, min(limit, 100))
     provider = _provider()
-    cache_key = (provider, crop, state, market, limit)
+    cache_key = (provider, crop, state, district, market, limit)
     if not force_refresh:
         cached = _cache_get(cache_key)
         if cached is not None:
             return cached
+
+    # District filtering is applied after the provider call because neither
+    # public feed exposes a district filter parameter. Scan a wider window so a
+    # farmer's district is not lost behind higher-priced rows from other districts.
+    scan_limit = max(limit * 10, settings.DATA_GOV_PAGE_SIZE) if district else limit
 
     with httpx.Client(
         timeout=settings.LIVE_MARKET_TIMEOUT_SECONDS,
@@ -634,22 +644,48 @@ def fetch_live_rates(
     ) as client:
         if provider == "mandi_api":
             payload = _fetch_keyless(
-                client, crop=crop, state=state, market=market, limit=limit
+                client, crop=crop, state=state, market=market, limit=scan_limit
             )
         else:
             try:
                 payload = _fetch_official(
-                    client, crop=crop, state=state, market=market, limit=limit
+                    client, crop=crop, state=state, market=market, limit=scan_limit
                 )
             except AppError as exc:
                 if settings.LIVE_MARKET_PROVIDER != "auto":
                     raise
+                if state and state not in KELESS_STATES:
+                    # The mirror has no data for these states. Falling back to it
+                    # would hide an official-feed outage behind an
+                    # "unsupported state" error, which is not actionable.
+                    raise AppError(
+                        f"Official live mandi rates for {state} are temporarily "
+                        "unavailable. Please retry shortly. The keyless mirror "
+                        f"does not cover {state}.",
+                        status_code=503,
+                        code="official_feed_unavailable",
+                        details={
+                            "provider": "data_gov",
+                            "state": state,
+                            "reason": exc.message,
+                        },
+                    ) from exc
                 logger.warning(
                     "Official live rates failed, using keyless mirror: %s", exc.message
                 )
                 payload = _fetch_keyless(
-                    client, crop=crop, state=state, market=market, limit=limit
+                    client, crop=crop, state=state, market=market, limit=scan_limit
                 )
+
+    if district:
+        wanted_district = district.casefold()
+        payload["records"] = [
+            row
+            for row in payload["records"]
+            if str(row.get("district") or "").strip().casefold() == wanted_district
+        ][:limit]
+    else:
+        payload["records"] = payload["records"][:limit]
 
     if not payload["records"]:
         raise AppError(
@@ -660,6 +696,7 @@ def fetch_live_rates(
                 "provider": payload["provider"],
                 "commodity_query": payload["commodity_query"],
                 "state": state,
+                "district": district,
             },
         )
 
@@ -669,6 +706,7 @@ def fetch_live_rates(
         {
             "crop": crop,
             "state": state,
+            "district": district,
             "market": market,
             "unit": "INR/quintal",
             "latest_observation_date": latest_date,
@@ -681,11 +719,14 @@ def fetch_live_rates(
                 "guaranteed transaction price."
             ),
             "coverage_note": (
-                "Nationwide Agmarknet coverage from the daily mandi feed plus "
-                "the variety-wise feed; duplicates prefer the primary feed."
-                if payload["provider"] == "data_gov"
-                else "Keyless mirror covers Maharashtra, Uttar Pradesh, Punjab, "
-                "Madhya Pradesh and Karnataka only."
+                (
+                    "Nationwide Agmarknet coverage from the daily mandi feed plus "
+                    "the variety-wise feed; duplicates prefer the primary feed."
+                    if payload["provider"] == "data_gov"
+                    else "Keyless mirror covers Maharashtra, Uttar Pradesh, Punjab, "
+                    "Madhya Pradesh and Karnataka only."
+                )
+                + (f" Filtered to {district} district from your farm." if district else "")
             ),
         }
     )
