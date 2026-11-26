@@ -12,7 +12,11 @@ RUN npm run build
 
 FROM nginx:1.27-alpine AS runtime
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Local Compose default. Render/Railway override this with the backend service
+# URL; the official nginx entrypoint renders the template on container start.
+ENV BACKEND_ORIGIN=http://backend:8000
+
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80

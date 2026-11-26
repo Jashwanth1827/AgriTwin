@@ -65,6 +65,8 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    environment:
+      BACKEND_ORIGIN: ${BACKEND_ORIGIN:-http://backend:8000}
     ports:
       - "${FRONTEND_PORT:-5173}:80"
     healthcheck:

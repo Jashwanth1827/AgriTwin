@@ -112,6 +112,22 @@ class Settings(BaseSettings):
     SEED_DEMO_USER_EMAIL: str = "demo@agritwin.in"
     SEED_DEMO_USER_PASSWORD: str = "Demo@12345"
 
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def _normalize_database_url(cls, value: Any) -> str:
+        """Accept hosted `postgres://` URLs and use the installed Psycopg 3 driver.
+
+        Render and Railway hand out ``postgres://...`` connection strings, while
+        SQLAlchemy 2 no longer rewrites that legacy scheme automatically.
+        Local Compose already uses ``postgresql+psycopg://`` and is unchanged.
+        """
+        url = str(value)
+        if url.startswith("postgres://"):
+            return f"postgresql+psycopg://{url[len('postgres://'):]}"
+        if url.startswith("postgresql://"):
+            return f"postgresql+psycopg://{url[len('postgresql://'):]}"
+        return url
+
     @field_validator("UPLOAD_DIR", "CROP_HEALTH_ARTIFACT_DIR", "YIELD_ARTIFACT_DIR", "MARKET_ARTIFACT_DIR", mode="before")
     @classmethod
     def _to_path(cls, value: Any) -> Path:
